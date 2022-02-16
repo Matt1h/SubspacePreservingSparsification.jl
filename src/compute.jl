@@ -22,12 +22,12 @@ function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Inte
 end
 
 
-function near_zero_row_col(M::AbstractMatrix)
+function near_zero_row_col(M::AbstractMatrix{T}) where {T}
     max_in_col = maximum(M, dims=1)
     max_in_row = maximum(M, dims=2)
     A_max = maximum(max_in_col)
 
-    tol = A_max*eps(Float64)* 100  # magic constant from matlab # TODO: type of A instead always float
+    tol = A_max * eps(T) * 100  # magic constant from matlab
 
     num_near_zero_cols = sum(max_in_col .<= tol)
     num_near_zero_rows = sum(max_in_row .<= tol)
