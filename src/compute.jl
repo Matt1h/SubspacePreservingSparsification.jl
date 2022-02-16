@@ -1,4 +1,4 @@
-function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Int, impose_null_spaces=false::Bool)
+function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Integer, impose_null_spaces=false::Bool)
     pinv_M, rnull, lnull = pinv_qr(M)
 
     # sparsity pattern
@@ -61,8 +61,8 @@ function ssa_minimization(M, M_id, pinv_M)
 end
 
 
-function ssa_system_no_null(M::AbstractMatrix, M_id::SparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
-    M_id_i, M_id_j, M_id_v = findnz(M_id)  # TODO: compute this only one time? 
+function ssa_system_no_null(M::AbstractMatrix, M_id::AbstractSparseMatrix, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+    M_id_i, M_id_j, M_id_v = findnz(M_id)  # TODO: compute this only one time?
 
     M_id_uniq = unique(M_id_v)
     N = length(M_id_uniq)
@@ -132,14 +132,14 @@ function ssa_system_no_null(M::AbstractMatrix, M_id::SparseMatrixCSC, pinv_MTM::
 end
 
 
-function ssa_unknown_to_matrix(x::AbstractVector, M_id::SparseMatrixCSC)
+function ssa_unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrix)
     M_id_i, M_id_j, M_id_v = findnz(M_id)
     return sparse(M_id_i, M_id_j, x[M_id_v])
 end
 
 
-function ssa_impose_action!(Y::SparseMatrixCSC, M::AbstractMatrix, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
-     tol=eps(Float64)::Real, max_iters=1000::Int)
+function ssa_impose_action!(Y::AbstractSparseMatrix, M::AbstractMatrix, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
+     tol=eps(Float64)::Real, max_iters=1000::Integer)
     m, n = size(Y)
     _, nR = size(R_mat)
     _, nL = size(L_mat)

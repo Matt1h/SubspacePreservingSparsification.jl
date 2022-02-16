@@ -1,4 +1,4 @@
-function bin_sparse_matrix!(M::AbstractMatrix, M_id::SparseMatrixCSC{Int}, max_num_bins::Int)
+function bin_sparse_matrix!(M::AbstractMatrix, M_id::AbstractSparseMatrix, max_num_bins::Integer)
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
@@ -32,7 +32,7 @@ function separated_min_max(v::AbstractVector, separated_at::Real) # TODO: add pe
 end
 
 
-function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Int, 
+function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Integer,
     min_left::Real, max_left::Real, min_right::Real, max_right::Real, separated_at::Real)
     n = length(v)
 
@@ -92,7 +92,7 @@ function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Int,
     return bin_ids
 end
 
-function bin_mapping(bin_ids::Vector{Int})
+function bin_mapping(bin_ids::AbstractVector{<:Integer})
 
     min_id = minimum(bin_ids)
     max_id = maximum(bin_ids)

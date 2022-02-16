@@ -1,4 +1,4 @@
-function p_norm_sparsity_matrix(M::AbstractMatrix, ratio::Real, p::Real, min_per_row::Int, min_per_col::Int)
+function p_norm_sparsity_matrix(M::AbstractMatrix, ratio::Real, p::Real, min_per_row::Integer, min_per_col::Integer)
     # todo implement all different cases
     # todo make almost symmetric matrices symmetric
     m, n = size(M)
@@ -13,7 +13,7 @@ function p_norm_sparsity_matrix(M::AbstractMatrix, ratio::Real, p::Real, min_per
 end
 
 
-function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num_nnz::Int)
+function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num_nnz::Integer)
     # todo implement all different cases
     # todo p = inf, p < 1
     n = length(v)
