@@ -8,16 +8,11 @@ function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Inte
     M_id = p_norm_sparsity_matrix(M, ratio, p, min_per_row, min_per_col)
 
     # binning pattern
-    bin_sparse_matrix!(M, M_id, max_num_bins) 
+    bin_sparse_matrix!(M, M_id, max_num_bins)
 
     # minimization
-    if impose_null_spaces
-        X = ssa_minimization(M, M_id, pinv_M)
-        ssa_impose_action!(X, M, rnull, lnull)
-    else
-        X = ssa_minimization(M, M_id, pinv_M)
-        return X
-    end
+    X = ssa_minimization(M, M_id, pinv_M)
+    impose_null_spaces && ssa_impose_action!(X, M, rnull, lnull)
     return X
 end
 
