@@ -67,8 +67,6 @@ transformations = Dict(
     "bin_pattern" => my_default_compute_bin_pattern,
 )
 
-tol = 10e-6
-
 # load untransformed matrix
 file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", "with_nullspace.mat"))
 A = read(file, "A")
@@ -86,9 +84,9 @@ for j_trans_name in trans_names
     if typeof(trans_A) != Matrix{Float64}
         trans_A = Matrix{Float64}(trans_A)
     end
-    file = matopen(joinpath("test", "test_data", sq, 
+    local file = matopen(joinpath("test", "test_data", sq,
     "transformed_matrices", "matlab", "with_nullspace", j_trans_name*".mat"))
     trans_A_mat = read(file, "trans_A")  # TODO: no sparse matrix
     close(file)
-    @test norm(trans_A - trans_A_mat) < tol
+    @test trans_A ≈ trans_A_mat
 end
