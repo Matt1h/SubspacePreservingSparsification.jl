@@ -14,7 +14,7 @@ function bin_sparse_matrix!(M::AbstractMatrix, M_id::SparseMatrixCSC{Int}, max_n
         for k in 1:M_pat_nnz
             nz_M[k] = M[M_i[k], M_j[k]]
         end
-        min_left, max_left, min_right, max_right = separated_min_max(nz_M, separated_at, 0)
+        min_left, max_left, min_right, max_right = separated_min_max(nz_M, separated_at)
         bin_ids = binned_with_separated_min_max(nz_M, max_num_bins, min_left, max_left, min_right, max_right, separated_at)
         new_ids = bin_mapping(bin_ids)
         M_id[:, :] = sparse(M_i, M_j, new_ids, m, n)
@@ -22,33 +22,12 @@ function bin_sparse_matrix!(M::AbstractMatrix, M_id::SparseMatrixCSC{Int}, max_n
     return M_id
 end
 
-function separated_min_max(v::AbstractVector, separated_at::Real, perturb_fuzz::Real)
-    n = length(v)
+_extrema(v) = isempty(v) ? (Inf, -Inf) : extrema(v)
 
-    min_left = Inf
-    max_left = -Inf
-    min_right = Inf
-    max_right = -Inf
-    for i in 1:n
-        if v[i] == separated_at
-            max_left = separated_at
-            min_right = separated_at
-        elseif v[i] < separated_at
-            if max_left < v[i]
-                max_left = v[i]
-            end
-            if v[i] < min_left
-                min_left = v[i]
-            end
-        else
-            if max_right < v[i]
-                max_right = v[i]
-            end
-            if v[i] < min_right
-                min_right = v[i]
-            end
-        end
-    end
+function separated_min_max(v::AbstractVector, separated_at::Real) # TODO: add perturb_fuzz
+    min_left, max_left = _extrema(v[v .<= separated_at])
+    min_right, max_right = _extrema(v[v .>= separated_at])
+
     return min_left, max_left, min_right, max_right
 end
 
