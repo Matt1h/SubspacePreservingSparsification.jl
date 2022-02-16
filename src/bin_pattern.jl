@@ -94,9 +94,7 @@ end
 
 function bin_mapping(bin_ids::AbstractVector{<:Integer})
 
-    min_id = minimum(bin_ids)
-    max_id = maximum(bin_ids)
-
+    min_id, max_id = extrema(bin_ids)
     impossible_id = typemin(Int)
 
     num_bins = max_id - min_id + 1

@@ -7,7 +7,7 @@ function p_norm_sparsity_matrix(M::AbstractMatrix, ratio::Real, p::Real, min_per
         M_pat[i, :] = p_norm_sparsity_vector(M[i, :], ratio, p, min_per_row)
     end
     for j in 1:n
-        M_pat[:, j] = broadcast(max, p_norm_sparsity_vector(M[:, j], ratio, p, min_per_col), M_pat[:, j])
+        M_pat[:, j] = max.(p_norm_sparsity_vector(M[:, j], ratio, p, min_per_col), M_pat[:, j])
     end
     return M_pat
 end
@@ -18,10 +18,10 @@ function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num
     # todo p = inf, p < 1
     n = length(v)
 
-    v = broadcast(abs, v)
+    v = abs.(v)
     v = v.^p
 
-    nnz_v = sum(v .> 0) # todo if nnz_v == 0
+    # nnz_v = sum(v .> 0) # todo if nnz_v == 0
 
     idx = sortperm(v)
     v = v[idx]
