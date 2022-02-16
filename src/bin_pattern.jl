@@ -1,9 +1,9 @@
-function bin_sparse_matrix!(M::AbstractMatrix, M_id::AbstractSparseMatrix, max_num_bins::Integer)
+function bin_sparse_matrix!(M::AbstractMatrix{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
 
-    separated_at = 0
+    separated_at = zero(T)
 
     if max_num_bins == 0
         data = Vector(1:M_pat_nnz)
@@ -24,7 +24,7 @@ end
 
 _extrema(v) = isempty(v) ? (Inf, -Inf) : extrema(v)
 
-function separated_min_max(v::AbstractVector, separated_at::Real) # TODO: add perturb_fuzz
+function separated_min_max(v::AbstractVector{T}, separated_at::T) where {T<:Real} # TODO: add perturb_fuzz
     min_left, max_left = _extrema(v[v .<= separated_at])
     min_right, max_right = _extrema(v[v .>= separated_at])
 

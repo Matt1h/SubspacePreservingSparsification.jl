@@ -1,8 +1,9 @@
 module SSA
 
 using StatsBase
-using SparseArrays
 using LinearAlgebra
+using SparseArrays
+using SparseArrays: AbstractSparseMatrixCSC
 
 include("math_functions.jl")
 include("sparse_pattern.jl")
