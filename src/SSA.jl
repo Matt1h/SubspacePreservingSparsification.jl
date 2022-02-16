@@ -1,6 +1,5 @@
 module SSA
 
-using Revise
 using StatsBase
 using SparseArrays
 using LinearAlgebra
