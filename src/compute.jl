@@ -174,9 +174,9 @@ function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractMatrix, R_mat
             break
         end
 
-        for k in 1:nnz_Y
-            @views d_R_proj_vec[k] = R_mat[Y_j[k], :]' * d_R[Y_i[k], :]
-            @views d_L_proj_vec[k] = L_mat[Y_i[k], :]' * d_L[Y_j[k], :]
+        @views for k in 1:nnz_Y
+            d_R_proj_vec[k] = R_mat[Y_j[k], :]' * d_R[Y_i[k], :]
+            d_L_proj_vec[k] = L_mat[Y_i[k], :]' * d_L[Y_j[k], :]
         end
 
         d_proj_vec = d_R_proj_vec .+ d_L_proj_vec
@@ -186,8 +186,8 @@ function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractMatrix, R_mat
         Lag_R = Lag_R .+ alpha .* d_R
         Lag_L = Lag_L .+ alpha .* d_L
 
-        for k in 1:nnz_Y  
-            @views Y[Y_i[k], Y_j[k]] = Y[Y_i[k], Y_j[k]] - alpha * d_proj_vec[k]
+        @views for k in 1:nnz_Y
+            Y[Y_i[k], Y_j[k]] = Y[Y_i[k], Y_j[k]] - alpha * d_proj_vec[k]
         end
 
         norm2_q_RL_old = norm(q_R)^2 + norm(q_L)^2
