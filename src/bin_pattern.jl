@@ -56,8 +56,8 @@ function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Integer,
 
     total_dist = left_dist + right_dist
 
-    max_n_left_bins = floor((loc_max_num_left_right_bins * left_dist) / total_dist)
-    max_n_right_bins = floor((loc_max_num_left_right_bins * right_dist) / total_dist)
+    max_n_left_bins = floor(Int, (loc_max_num_left_right_bins * left_dist) / total_dist)
+    max_n_right_bins = floor(Int, (loc_max_num_left_right_bins * right_dist) / total_dist)
 
     inv_h_l = max_n_left_bins / left_dist
     inv_h_r = max_n_right_bins / right_dist
@@ -78,13 +78,13 @@ function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Integer,
             if separated_at - v[i] <= left_tol
                 b = middle_id
             else
-                b = floor((v[i] - min_left) * inv_h_l)
+                b = floor(Int, (v[i] - min_left) * inv_h_l)
             end
         else  # if (separated_at < v[i])
             if v[i] - separated_at <= right_tol
                 b = middle_id
             else
-                b = floor((max_right - v[i]) * inv_h_r) + max_n_left_bins
+                b = floor(Int, (max_right - v[i]) * inv_h_r) + max_n_left_bins
             end
         end
         bin_ids[i] = b
