@@ -80,10 +80,7 @@ for i_type_name in type_names
         trans = transformations[j_trans_name]
         trans_A = trans(A)
         if typeof(trans_A) == Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}  # TODO: more general?
-            # tic()
             trans_A = trans_A[1]
-            # t = toc()
-            # total_time = total_time +t
         end
         if typeof(trans_A) != Matrix{Float64}
             trans_A = Matrix{Float64}(trans_A)

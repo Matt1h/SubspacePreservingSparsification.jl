@@ -39,14 +39,19 @@ end
 
 function upper_bound(v::AbstractVector, value::Real)
     n = length(v)
-    low = 0
-    high = n-1
-    while low <= high
-        mid = floor(Int, (low + high) / 2)
-        if value < v[mid]
-            high = mid - 1
-        else
-            low = mid + 1
+
+    if n == 0
+        low = 0
+    else
+        low = 1
+        high = n
+        while low <= high
+            mid = floor(Int, (low + high) / 2)
+            if value < v[mid]
+                high = mid - 1
+            else
+                low = mid + 1
+            end
         end
     end
     return low

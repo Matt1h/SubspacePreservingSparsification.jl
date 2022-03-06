@@ -57,70 +57,32 @@ end
 
 
 function ssa_system_no_null(M::AbstractMatrix, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
-    M_id_i, M_id_j, M_id_v = findnz(M_id)  # TODO: compute this only one time?
 
-    M_id_uniq = unique(M_id_v)
-    N = length(M_id_uniq)
+    N = length(unique(M_id.nzval))
 
-    # number of most frequently occurring dof id
-    max_id_occurrences = sum(M_id_v .== mode(M_id_v))
+    D = M * pinv_MTM + pinv_MMT * M
 
-    M_id_loc_row = zeros(Int, N, max_id_occurrences)
-    M_id_loc_col = zeros(Int, N, max_id_occurrences)
-    M_id_loc_next = ones(Int, N)
+    LS_A = zeros(Float64, (N, N))
+    LS_b = zeros(Float64, N)
 
-    M_id_nnz = count(!iszero, M_id)
-    
-    for k in 1:M_id_nnz
-        M_id_val = M_id_v[k]
-        M_id_loc_row[M_id_val, M_id_loc_next[M_id_val]] = M_id_i[k]
-        M_id_loc_col[M_id_val, M_id_loc_next[M_id_val]] = M_id_j[k]
-        M_id_loc_next[M_id_val] = M_id_loc_next[M_id_val] + 1
-    end
-    
-    M_id_count = M_id_loc_next .- 1
+    for idx in findall(!iszero, M_id)
+        J, L = findnz(M_id[Tuple(idx)[1], :])
+        k = 1
+        for l in L
+            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + pinv_MTM[J[k], Tuple(idx)[2]]
+            k += 1
+        end
 
-    M__pinv_ATA = M * pinv_MTM
-    pinv_MMT__A = pinv_MMT * M
-
-    LS_A = Matrix{Float64}(undef, N, N)
-    LS_b = Vector{Float64}(undef, N)
-
-    for i in 1:N
-        for j in 1:N
-
-            tmp = 0
-            for K in 1:M_id_count[i]
-                for L in 1:M_id_count[j]
-
-                    u_row = M_id_loc_row[i, K]
-                    u_col = M_id_loc_col[i, K]
-
-                    v_row = M_id_loc_row[j, L]
-                    v_col = M_id_loc_col[j, L]
-
-                    if u_col == v_col
-                        tmp = tmp + pinv_MMT[u_row, v_row]
-                    end
-                    if u_row == v_row
-                        tmp = tmp + pinv_MTM[u_col, v_col]
-                    end
-                end
-            end
-            LS_A[i, j] = tmp
+        J, L = findnz(M_id[:, Tuple(idx)[2]])
+        k = 1
+        for l in L
+            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + pinv_MMT[Tuple(idx)[1], J[k]]
+            k += 1
         end
     end
 
-
-    for i in 1:N
-        tmp = 0
-        for K in 1:M_id_count[i]
-            row = M_id_loc_row[i, K]
-            col = M_id_loc_col[i, K]
-
-            tmp = tmp + M__pinv_ATA[row, col] + pinv_MMT__A[row, col]
-        end
-        LS_b[i] = tmp
+    @views for i in 1:N
+        LS_b[i] = sum(D[M_id .== i])
     end
 
     return LS_A, LS_b
