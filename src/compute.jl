@@ -35,7 +35,6 @@ function ssa_minimization!(M, M_id, pinv_M)
     pinv_MMT = pinv_M' * pinv_M
     LS_M, LS_b = ssa_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
     LS_M, = pinv_qr(LS_M)
-
     LS_x = LS_M * LS_b
 
     M[:, :] = ssa_unknown_to_matrix(LS_x, M_id)
