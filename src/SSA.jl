@@ -1,7 +1,5 @@
 module SSA
 
-using Revise
-using StatsBase
 using LinearAlgebra
 using SparseArrays
 using SparseArrays: AbstractSparseMatrixCSC

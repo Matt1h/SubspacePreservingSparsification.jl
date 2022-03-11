@@ -1,12 +1,13 @@
-function p_norm_sparsity_matrix(M::AbstractMatrix, ratio::Real, p::Real, min_per_row::Integer, min_per_col::Integer)
-    # todo implement all different cases
+function p_norm_sparsity_matrix(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
     # todo make almost symmetric matrices symmetric
-    m, n = size(M)
+    m = size(M, 1)
+    n = size(M, 2)
+
     M_pat = spzeros(Int, m, n)
-    for i in 1:m
+    @views for i in 1:m
         M_pat[i, :] = p_norm_sparsity_vector(M[i, :], ratio, p, min_per_row)
     end
-    for j in 1:n
+    @views for j in 1:n
         M_pat[:, j] = max.(p_norm_sparsity_vector(M[:, j], ratio, p, min_per_col), M_pat[:, j])
     end
     return M_pat
@@ -14,23 +15,41 @@ end
 
 
 function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num_nnz::Integer)
-    # todo implement all different cases
-    # todo p = inf, p < 1
+    @assert p > 0 "p must be greater than zero"
+
     n = length(v)
 
     v = abs.(v)
-    v = v.^p
 
-    # nnz_v = sum(v .> 0) # todo if nnz_v == 0
+    nnz_v = sum(v .> 0)
+
+    if nnz_v == 0
+        v_pat = spzeros(Int, n)
+        return v_pat
+    end
+
+    @assert nnz_v >= min_num_nnz "minimum number for non zeros entries bigger than non zero entries"
+    @assert nnz_v >= 0 "minimum number for non zeros entries must be greater equal zero"
 
     idx = sortperm(v)
     v = v[idx]
 
-    csum = cumsum(v)
-    sum_threshold = csum[end] * (1 - ratio) ^ max(1, p)
+    if p == Inf
+        if min_num_nnz == nnz_v 
+            num_needed = min_num_nnz
+        else
+            discarded_bound = (1-ratio)*v[end]
+            num_needed = n - upper_bound(v[1:end-min_num_nnz], discarded_bound) + 1
+        end
+    else
+        v = v.^p
+        csum = cumsum(v)
+        sum_threshold = csum[end] * (1 - ratio) ^ max(1, p)
 
-    ub = upper_bound(csum, sum_threshold)
-    num_needed = max(min_num_nnz, n - ub + 1)
+        ub = upper_bound(csum, sum_threshold)
+        num_needed = max(min_num_nnz, n - ub + 1)
+    end
+
     data = ones(Int, num_needed)
     v_pat = sparsevec(idx[n - num_needed + 1:n], data, n)
     return v_pat

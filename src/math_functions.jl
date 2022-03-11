@@ -1,16 +1,18 @@
-function pinv_qr(M::AbstractMatrix{T}) where {T}
-    m, n = size(M)
+function pinv_qr(M::AbstractArray{T}) where {T}
+    m = size(M, 1)
+    n = size(M, 2)
+    
     F = qr(M)
-    Q = Matrix(F.Q)
+    Q = F.Q*Matrix(I ,m, m)  # so Q is allways m x m, with Matrix(F.Q) we get a m x n Matrix for m >= n
     R = Matrix(F.R)
 
     # compute rank 
-    abs_diag_R = abs.(diag(F.R))
+    abs_diag_R = abs.(diag(R))
     tol = 100 * minimum(size(M)) * maximum(abs_diag_R) * eps(T);  # MAGIC CONSTANT
     rnk = sum(tol .< abs_diag_R)
 
     # compute pseudoinverse
-    M_pinv = Matrix{Float64}(undef, n, m)
+    M_pinv = Matrix{T}(undef, n, m)
     S = R[1:rnk, 1:rnk] \ R[1:rnk, rnk+1:end]
     W = R[1:rnk, 1:rnk] \ Q[:, 1:rnk]'
     X = (S' * S + I) \ (S' * W) 

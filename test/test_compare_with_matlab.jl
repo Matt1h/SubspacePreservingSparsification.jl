@@ -72,8 +72,8 @@ tol = 10e-6
 
 for i_type_name in type_names
     # load untransformed matrix
-    file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", i_type_name*".mat"))
-    A = read(file, "A")
+    local file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", i_type_name*".mat"))
+    local A = read(file, "A")
     close(file)
 
     for j_trans_name in trans_names

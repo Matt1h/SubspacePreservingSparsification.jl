@@ -1,10 +1,17 @@
-function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Integer, impose_null_spaces=false::Bool)
+function ssa_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
+    impose_null_spaces=false::Bool) where{T}
+
+    
+    if T <: Integer
+        M = 1.0*M
+    end
+    
     pinv_M, rnull, lnull = pinv_qr(M)
 
     # sparsity pattern
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
-    min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
-    min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
+    min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
+    min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
     M_id = p_norm_sparsity_matrix(M, ratio, p, min_per_row, min_per_col)
 
     # binning pattern
@@ -17,7 +24,7 @@ function ssa_compute(M::AbstractMatrix, ratio::Real, p::Real, max_num_bins::Inte
 end
 
 
-function near_zero_row_col(M::AbstractMatrix{T}) where {T}
+function near_zero_row_col(M::AbstractArray{T}) where {T}
     max_in_col = maximum(M, dims=1)
     max_in_row = maximum(M, dims=2)
     A_max = maximum(max_in_col)
@@ -55,7 +62,7 @@ function ssa_minimization(M, M_id, pinv_M)
 end
 
 
-function ssa_system_no_null(M::AbstractMatrix, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+function ssa_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
 
     N = length(unique(M_id.nzval))
 
@@ -89,12 +96,13 @@ end
 
 
 function ssa_unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrixCSC)
+    m, n = size(M_id)
     M_id_i, M_id_j, M_id_v = findnz(M_id)
-    return sparse(M_id_i, M_id_j, x[M_id_v])
+    return sparse(M_id_i, M_id_j, x[M_id_v], m, n)
 end
 
 
-function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractMatrix, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
+function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
      tol=eps(Float64)::Real, max_iters=1000::Integer)
     m, n = size(Y)
     _, nR = size(R_mat)

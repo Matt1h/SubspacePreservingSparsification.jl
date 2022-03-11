@@ -1,4 +1,4 @@
-function bin_sparse_matrix!(M::AbstractMatrix{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
+function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
@@ -24,7 +24,7 @@ end
 
 _extrema(v) = isempty(v) ? (Inf, -Inf) : extrema(v)
 
-function separated_min_max(v::AbstractVector{T}, separated_at::T) where {T<:Real} # TODO: add perturb_fuzz
+function separated_min_max(v::AbstractVector{T}, separated_at::T) where {T<:Real} 
     min_left, max_left = _extrema(v[v .<= separated_at])
     min_right, max_right = _extrema(v[v .>= separated_at])
 
@@ -32,8 +32,8 @@ function separated_min_max(v::AbstractVector{T}, separated_at::T) where {T<:Real
 end
 
 
-function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Integer,
-    min_left::Real, max_left::Real, min_right::Real, max_right::Real, separated_at::Real)
+function binned_with_separated_min_max(v::AbstractVector{T}, max_num_bins::Integer,
+    min_left::Real, max_left::Real, min_right::Real, max_right::Real, separated_at::Real) where{T}
     n = length(v)
 
     if max_left == min_right
@@ -56,16 +56,22 @@ function binned_with_separated_min_max(v::AbstractVector, max_num_bins::Integer,
 
     total_dist = left_dist + right_dist
 
-    max_n_left_bins = floor(Int, (loc_max_num_left_right_bins * left_dist) / total_dist)
-    max_n_right_bins = floor(Int, (loc_max_num_left_right_bins * right_dist) / total_dist)
+    if total_dist != 0
+        max_n_left_bins = floor(Int, (loc_max_num_left_right_bins * left_dist) / total_dist)
+        max_n_right_bins = floor(Int, (loc_max_num_left_right_bins * right_dist) / total_dist)
+    else
+        max_n_left_bins = Inf
+        max_n_right_bins = Inf
+    end
+    @assert max_n_left_bins + max_n_right_bins <= loc_max_num_left_right_bins
 
     inv_h_l = max_n_left_bins / left_dist
     inv_h_r = max_n_right_bins / right_dist
 
     fuzz = 1E2  # magic constant from matlab
 
-    left_tol = fuzz * eps(Float64) * left_dist  # todo typeof(elements of v)?
-    right_tol = fuzz * eps(Float64) * right_dist
+    left_tol = fuzz * eps(T) * left_dist
+    right_tol = fuzz * eps(T) * right_dist
 
     bin_ids = -ones(Int, n)
 
@@ -94,7 +100,7 @@ end
 
 function bin_mapping(bin_ids::AbstractVector{<:Integer})
 
-    min_id, max_id = extrema(bin_ids)
+    min_id, max_id = _extrema(bin_ids)
     impossible_id = typemin(Int)
 
     num_bins = max_id - min_id + 1
