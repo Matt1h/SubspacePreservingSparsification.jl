@@ -1,3 +1,27 @@
+"""
+    p_norm_sparsity_matrix(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
+
+Compute a pattern matrix M_pat which is a p-norm sparsity pattern for M.
+
+M_pat is sparse SparseMatrixCSC{Int64, Int64} and same shape of M and
+contains only 0 or 1.
+
+ratio should be in [0,1].  p should be in (0,inf]
+
+min_per_row is the minimum number of non-zeros needed per row.
+min_per_col is the minimum number of non-zeros needed per column.
+Defaults are 0.
+
+See also: [`ssa_compute`](@ref), [`bin_sparse_matrix!`](@ref).
+
+# Examples
+```jldoctest
+julia> p_norm_sparsity_matrix([4 1; 0.1 17], 0.6, 2)
+2×2 SparseMatrixCSC{Int64, Int64} with 2 stored entries:
+1  ⋅
+⋅  1
+```
+"""
 function p_norm_sparsity_matrix(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
     # todo make almost symmetric matrices symmetric
     m = size(M, 1)

@@ -31,13 +31,16 @@ min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(A)[1]))
 
 A_pat = p_norm_sparsity_matrix(A, 0.4, 2, min_per_row, min_per_col)
 A_id = bin_sparse_matrix!(A, A_pat, max_num_bin)
-print(typeof(A_pat))
+
 # pinv_ATA = pinv_A * pinv_A'
 # pinv_AAT = pinv_A' * pinv_A
 
-A = 1* sparse(Matrix(I, 4, 4))
-ssa_compute(A[:, 1], 0.4, Inf, 2, true)
-# print(p_norm_sparsity_vector(v::AbstractVector, 0.6, Inf, 4))
+# A = [4 3 2; 1 2 9; 0.5 3 1]
+# X = A\A'
+# print(X)
+# Y = similar(X)
+# ldiv!(Y, qr(A), A')
+# print(X)
 
 # n = Int(size(A)[1]/2)
 # z = spzeros(n, n)
@@ -63,8 +66,8 @@ ssa_compute(A[:, 1], 0.4, Inf, 2, true)
 # print("Computation\n")
 # @benchmark ssa_compute($A, 0.4, 2, max_num_bin, true)
 
-# print("pseudo inverse\n")
-# @benchmark pinv_qr($A)
+print("pseudo inverse\n")
+@benchmark pinv_qr($A)
 
 # print("minimization\n")
 # @benchmark SSA.ssa_minimization(A, A_id, pinv_A)

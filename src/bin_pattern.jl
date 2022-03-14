@@ -1,3 +1,28 @@
+"""
+    bin_sparse_matrix!(M::AbstractArray, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer)
+
+Compute a Binning pattern in `M_id` from the sparsity pattern in `M_id`.
+
+`M_id` is SparseMatrixCSC{Int64, Int64} with the same shape as `M`, 
+when handed over it contains only 0 and 1. After usage it contains an Integer 
+corresponding to a bin or 0. According to the Binning Pattern, 
+similar valued entries can be considered the same.
+
+`M` is the matrix whose entries are used for binning. `max_num_bins` is the maximum 
+number of bins and must be non-negativ, if `max_num_bins == 0`, no binning is
+performed and only the sparsity pattern in `M_id` is used then.
+
+See also: [`ssa_compute`](@ref), [`p_norm_sparsity_matrix`](@ref).
+
+# Examples
+```jldoctest
+julia> bin_sparse_matrix!([4 1 4.01; 0.1 17.1 17; 0.2 4 29], sparse([1 0 1; 0 1 1; 0 0 1]), 200)
+3×3 SparseMatrixCSC{Int64, Int64} with 5 stored entries:
+ 1  ⋅  1
+ ⋅  2  2
+ ⋅  ⋅  3
+```
+"""
 function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
