@@ -24,6 +24,9 @@ julia> bin_sparse_matrix!([4 1 4.01; 0.1 17.1 17; 0.2 4 29], sparse([1 0 1; 0 1 
 ```
 """
 function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
+    @assert max_num_bins >= 0 "max_num_bins must be non-negative"
+    @assert size(M) == size(M_id) "M must be the same size as M_id"
+
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
@@ -60,6 +63,15 @@ end
 function binned_with_separated_min_max(v::AbstractVector{T}, max_num_bins::Integer,
     min_left::Real, max_left::Real, min_right::Real, max_right::Real, separated_at::Real) where{T}
     n = length(v)
+5
+    if min_left <= max_left
+        @assert all(min_left .<= v) "some element of v is less than min_left"
+        @assert min_left <= separated_at "incompatible min_left and separated_at"
+    end
+    if min_right <= max_right
+        @assert all(v .<= max_right) "some element of v is greater than max_right"
+        @assert separated_at <= max_right "incompatible separated_at and max_right"
+    end
 
     if max_left == min_right
         loc_max_num_left_right_bins = max_num_bins - 1
@@ -127,6 +139,8 @@ function bin_mapping(bin_ids::AbstractVector{<:Integer})
 
     min_id, max_id = _extrema(bin_ids)
     impossible_id = typemin(Int)
+
+    @assert impossible_id != min_id "input array must not contain the minimum int"
 
     num_bins = max_id - min_id + 1
     work_array = impossible_id * ones(Int, num_bins)

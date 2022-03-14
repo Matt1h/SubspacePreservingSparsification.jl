@@ -78,6 +78,10 @@ end
 
 
 function ssa_minimization(M, M_id, pinv_M)
+    @assert size(M_id) == size(M) "ssa_minimization: A_id must be the same size as A"
+    @assert 0 <= minimum(M_id) "ssa_minimization: A_id contains negative integers"
+    @assert size(M) == size(pinv_M) "pinv_M has wrong size"
+
     pinv_MTM = pinv_M * pinv_M'
     pinv_MMT = pinv_M' * pinv_M
     LS_M, LS_b = ssa_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
@@ -91,6 +95,11 @@ end
 
 
 function ssa_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+    m, n = size(M)
+    @assert size(M_id) == size(M) "ssa_minimization: A_id must be the same size as A"
+    @assert 0 <= minimum(M_id) "ssa_minimization: A_id contains negative integers"
+    @assert size(pinv_MTM)[1] == size(pinv_MTM)[2] == m "pinv_MTM has wrong size"
+    @assert size(pinv_MMT)[1] == size(pinv_MMT)[2] == n "pinv_MMT has wrong size"
 
     N = length(unique(M_id.nzval))
 
@@ -132,9 +141,15 @@ end
 
 function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
      tol=eps(Float64)::Real, max_iters=1000::Integer)
+    @assert tol > 0 "tol has to be greater than zero"
+    @assert size(M) == size(Y) "Y must be the same size as"
+
     m, n = size(Y)
-    _, nR = size(R_mat)
-    _, nL = size(L_mat)
+    nR1, nR2 = size(R_mat)
+    nL1, nL2 = size(L_mat)
+
+    @assert n == nR1 "Y * R_mat not possible"
+    @assert m == nL1 "Y' * L_mat not possible"
 
     # Quantities don't change when iterating
     norm_R_mat = norm(R_mat)
@@ -147,8 +162,8 @@ function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat:
     Y_i, Y_j, _ = findnz(Y)
 
     # Quantities that do change when iterating
-    Lag_R = zeros(m, nR)
-    Lag_L = zeros(n, nL)
+    Lag_R = zeros(m, nR2)
+    Lag_L = zeros(n, nL2)
 
     d_R = Y * R_mat - M_R_mat
     d_L = Y' * L_mat - M_L_mat
