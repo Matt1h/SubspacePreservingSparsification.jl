@@ -60,9 +60,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using SSA
-            DocMeta.setdocmeta!(SSA, :DocTestSetup, :(using SSA); recursive=true)
-            doctest(SSA)'
+            using SubspacePreservingSparsification
+            DocMeta.setdocmeta!(SubspacePreservingSparsification, :DocTestSetup, :(using SubspacePreservingSparsification); recursive=true)
+            doctest(SubspacePreservingSparsification)'
       - run: julia --project=docs/ --code-coverage=user docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
