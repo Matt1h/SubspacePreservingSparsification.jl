@@ -1,7 +1,5 @@
-push!(LOAD_PATH,"../src/")
-
 using Documenter
-using SSA
+using SubspacePreservingSparsification
 
-makedocs(modules=[SSA],
+makedocs(modules=[SubspacePreservingSparsification],
 sitename="My Documentation")
