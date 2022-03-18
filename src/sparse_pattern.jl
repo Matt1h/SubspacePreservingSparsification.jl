@@ -12,7 +12,7 @@ min_per_row is the minimum number of non-zeros needed per row.
 min_per_col is the minimum number of non-zeros needed per column.
 Defaults are 0.
 
-See also: [`ssa_compute`](@ref), [`bin_sparse_matrix!`](@ref).
+See also: [`sps_compute`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest

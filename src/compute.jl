@@ -1,13 +1,13 @@
 """
-    ssa_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer, 
+    sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer, 
         impose_null_spaces=false::Bool)
 
 Compute a SparseMatrixCSC{Float64, Int64} `X` for a matrix `M`, that is sparse and spectrally close to M,
 especially in the lower end of the singular value spectrum.
 
-Wrapper function over all the sparse spectral approximation (ssa) functionality.
+Wrapper function over all functionality.
 Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computetd with a
- `ratio` in [0,1] that determines the sparsity (0 means more sparse, 1 means less) 
+`ratio` in [0,1] that determines the sparsity (0 means more sparse, 1 means less) 
 and with `p` in (0,Inf] that determines which norm is used to find the sparsity pattern.
 Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
 determines whats the maximum number of bins (200-1000 is a reasonable choice). `max_num_bins == 0`
@@ -21,13 +21,13 @@ See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest
-julia> ssa_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
+julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499
    ⋅      16.8041
 ```
 """
-function ssa_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
+function sps_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
     impose_null_spaces=false::Bool) where{T}
 
     if T <: Integer
@@ -38,16 +38,19 @@ function ssa_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::In
 
     # sparsity pattern
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
-    min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
-    min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
+    # min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
+    # min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
+    min_per_row = 0
+    min_per_col = 0
+
     M_id = p_norm_sparsity_matrix(M, ratio, p, min_per_row, min_per_col)
 
     # binning pattern
     bin_sparse_matrix!(M, M_id, max_num_bins)
 
     # minimization
-    X = ssa_minimization(M, M_id, pinv_M)
-    impose_null_spaces && ssa_impose_action!(X, M, rnull, lnull)
+    X = sps_minimization(M, M_id, pinv_M)
+    impose_null_spaces && sps_impose_action!(X, M, rnull, lnull)
     return X
 end
 
@@ -65,41 +68,41 @@ function near_zero_row_col(M::AbstractArray{T}) where {T}
 end
 
 
-function ssa_minimization!(M, M_id, pinv_M)
+function sps_minimization!(M, M_id, pinv_M)
     pinv_MTM = pinv_M * pinv_M'
     pinv_MMT = pinv_M' * pinv_M
-    LS_M, LS_b = ssa_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
+    LS_M, LS_b = sps_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
     LS_M, = pinv_qr(LS_M)
     LS_x = LS_M * LS_b
 
-    M[:, :] = ssa_unknown_to_matrix(LS_x, M_id)
+    M[:, :] = sps_unknown_to_matrix(LS_x, M_id)
     return M
 end
 
 
-function ssa_minimization(M, M_id, pinv_M)
-    @assert size(M_id) == size(M) "ssa_minimization: A_id must be the same size as A"
-    @assert 0 <= minimum(M_id) "ssa_minimization: A_id contains negative integers"
-    @assert size(M) == size(pinv_M) "pinv_M has wrong size"
+function sps_minimization(M, M_id, pinv_M)
+    @assert size(M_id) == size(M) "M_id must be the same size as M"
+    @assert 0 <= minimum(M_id) "M_id contains negative integers"
+    @assert size(M, 1) == size(pinv_M, 2) && size(M, 2) == size(pinv_M, 1) "size of pinv_M and M do not match"
 
     pinv_MTM = pinv_M * pinv_M'
     pinv_MMT = pinv_M' * pinv_M
-    LS_M, LS_b = ssa_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
+    LS_M, LS_b = sps_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
     LS_M, = pinv_qr(LS_M) 
 
     LS_x = LS_M * LS_b
 
-    Y = ssa_unknown_to_matrix(LS_x, M_id)
+    Y = sps_unknown_to_matrix(LS_x, M_id)
     return Y
 end
 
 
-function ssa_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+function sps_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
     m, n = size(M)
-    @assert size(M_id) == size(M) "ssa_minimization: A_id must be the same size as A"
-    @assert 0 <= minimum(M_id) "ssa_minimization: A_id contains negative integers"
-    @assert size(pinv_MTM)[1] == size(pinv_MTM)[2] == m "pinv_MTM has wrong size"
-    @assert size(pinv_MMT)[1] == size(pinv_MMT)[2] == n "pinv_MMT has wrong size"
+    @assert size(M_id) == size(M) "M_id must be the same size as M"
+    @assert 0 <= minimum(M_id) "M_id contains negative integers"
+    @assert size(pinv_MTM)[1] == size(pinv_MTM)[2] == n "pinv_MTM has wrong size"
+    @assert size(pinv_MMT)[1] == size(pinv_MMT)[2] == m "pinv_MMT has wrong size"
 
     N = length(unique(M_id.nzval))
 
@@ -132,14 +135,52 @@ function ssa_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pin
 end
 
 
-function ssa_unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrixCSC)
+function sps_system_no_null_general(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
+    B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix)
+    m, n = size(M)
+    @assert size(B)[1] == size(B)[2] == n "B has wrong size"
+    @assert size(C)[1] == size(C)[2] == m "C has wrong size"
+    @assert size(D) == size(M) "D must be the same size as M"
+    @assert size(M_id) == size(M) "M_id must be the same size as M"
+    @assert 0 <= minimum(M_id) "M_id contains negative integers"
+
+    N = length(unique(M_id.nzval))
+
+    LS_A = zeros(Float64, (N, N))
+    LS_b = zeros(Float64, N)
+
+    for idx in findall(!iszero, M_id)
+        J, L = findnz(M_id[Tuple(idx)[1], :])
+        k = 1
+        for l in L
+            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + B[J[k], Tuple(idx)[2]]
+            k += 1
+        end
+
+        J, L = findnz(M_id[:, Tuple(idx)[2]])
+        k = 1
+        for l in L
+            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + C[Tuple(idx)[1], J[k]]
+            k += 1
+        end
+    end
+
+    @views for i in 1:N
+        LS_b[i] = sum(D[M_id .== i])
+    end
+
+    return LS_A, LS_b
+end
+
+
+function sps_unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrixCSC)
     m, n = size(M_id)
     M_id_i, M_id_j, M_id_v = findnz(M_id)
     return sparse(M_id_i, M_id_j, x[M_id_v], m, n)
 end
 
 
-function ssa_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
+function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
      tol=eps(Float64)::Real, max_iters=1000::Integer)
     @assert tol > 0 "tol has to be greater than zero"
     @assert size(M) == size(Y) "Y must be the same size as"

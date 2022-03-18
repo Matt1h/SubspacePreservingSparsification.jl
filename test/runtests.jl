@@ -1,7 +1,7 @@
-using SSA
+using SubspacePreservingSparsification
 using Test
 
-@testset "SSA.jl" begin
+@testset "SubspacePreservingSparsification.jl" begin
     @testset "Bin pattern" begin
         include("test_bin_pattern.jl")
     end

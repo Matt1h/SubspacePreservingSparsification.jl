@@ -12,7 +12,7 @@ similar valued entries can be considered the same.
 number of bins and must be non-negativ, if `max_num_bins == 0`, no binning is
 performed and only the sparsity pattern in `M_id` is used then.
 
-See also: [`ssa_compute`](@ref), [`p_norm_sparsity_matrix`](@ref).
+See also: [`sps_compute`](@ref), [`p_norm_sparsity_matrix`](@ref).
 
 # Examples
 ```jldoctest

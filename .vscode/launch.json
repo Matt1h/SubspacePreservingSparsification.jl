@@ -11,7 +11,8 @@
             "program": "${workspaceFolder}/test/speed_test.jl",
             "juliaEnv": "C:\\Users\\mholz\\AppData\\Local\\Temp\\jl_EwNwE6",
             "stopOnEntry": true
-        },{
+        },
+        {
             "type": "julia",
             "request": "launch",
             "name": "run Speedtest",

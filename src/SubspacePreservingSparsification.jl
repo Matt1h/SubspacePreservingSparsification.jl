@@ -1,4 +1,4 @@
-module SSA
+module SubspacePreservingSparsification
 
 using LinearAlgebra
 using SparseArrays
@@ -12,6 +12,6 @@ include("compute.jl")
 export pinv_qr
 export p_norm_sparsity_matrix
 export bin_sparse_matrix!
-export ssa_compute
+export sps_compute
 
 end  # end of module

@@ -1,4 +1,5 @@
-using SSA
+using SubspacePreservingSparsification
+using SubspacePreservingSparsification: near_zero_row_col
 using MAT
 using DelimitedFiles
 using LinearAlgebra
@@ -6,28 +7,28 @@ using LinearAlgebra
 sq = "square10"
 
 function default_ssa_compute_bin_no_null(M)
-    M = ssa_compute(M, 0.4, 2, 50)
+    M = sps_compute(M, 0.4, 2, 50)
     return M
 end
 
 
 function default_ssa_compute_no_bin_no_null(M)
-    M = ssa_compute(M, 0.4, 2, 0)
+    M = sps_compute(M, 0.4, 2, 0)
     return M
 end
 
 
 function my_default_ssa_compute_bin_null(M)
-    M = ssa_compute(M, 0.4, 2, 50, true)
+    M = sps_compute(M, 0.4, 2, 50, true)
     return M
 end
 
 
 function my_default_compute_sparse_pattern(M)
-    pinv_M, rnull, lnull = pinv_qr(M)
+    _, rnull, lnull = pinv_qr(M)
 
     # sparsity pattern
-    num_near_zero_rows, num_near_zero_cols = SSA.near_zero_row_col(M)
+    num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
     M = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
@@ -36,10 +37,10 @@ end
 
 
 function my_default_compute_bin_pattern(M)
-    pinv_M, rnull, lnull = pinv_qr(M)
+    _, rnull, lnull = pinv_qr(M)
 
     # sparsity pattern
-    num_near_zero_rows, num_near_zero_cols = SSA.near_zero_row_col(M)
+    num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
     M_pat = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
@@ -74,7 +75,7 @@ close(file)
 
 for j_trans_name in trans_names
     trans = transformations[j_trans_name]
-    trans_A = trans(A)
+    trans_A = @inferred trans(A)
     if typeof(trans_A) <: Tuple{Any, Any, Any}
         trans_A = trans_A[1]
     end
