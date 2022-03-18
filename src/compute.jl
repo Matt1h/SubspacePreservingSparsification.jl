@@ -81,7 +81,7 @@ end
 
 
 function sps_minimization(M, M_id, pinv_M)
-    @assert size(M_id) == size(M) "M_id must be the same size as M"
+    @assert size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) "M_id must be the same size as M"
     @assert 0 <= minimum(M_id) "M_id contains negative integers"
     @assert size(M, 1) == size(pinv_M, 2) && size(M, 2) == size(pinv_M, 1) "size of pinv_M and M do not match"
 
@@ -98,8 +98,9 @@ end
 
 
 function sps_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
-    m, n = size(M)
-    @assert size(M_id) == size(M) "M_id must be the same size as M"
+    m = size(M, 1)
+    n = size(M, 2)
+    @assert size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) "M_id must be the same size as M"
     @assert 0 <= minimum(M_id) "M_id contains negative integers"
     @assert size(pinv_MTM)[1] == size(pinv_MTM)[2] == n "pinv_MTM has wrong size"
     @assert size(pinv_MMT)[1] == size(pinv_MMT)[2] == m "pinv_MMT has wrong size"

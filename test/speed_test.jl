@@ -14,25 +14,23 @@ function init_script()
 end
 
 init_script()
-sq = "square100"
-file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", "centrosymmetric.mat"))
-A = read(file, "A")
-close(file)
+# sq = "square100"
+# file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", "centrosymmetric.mat"))
+# A = read(file, "A")
+# close(file)
 
 
-max_num_bin = 50
+# max_num_bin = 50
 
-pinv_A, rnull, lnull = pinv_qr(A)
+# pinv_A, rnull, lnull = pinv_qr(A)
 
-# sparsity pattern
-num_near_zero_rows, num_near_zero_cols = near_zero_row_col(A)
-min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(A)[2]))
-min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(A)[1]))
+# # sparsity pattern
+# num_near_zero_rows, num_near_zero_cols = near_zero_row_col(A)
+# min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(A)[2]))
+# min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(A)[1]))
 
-A_pat = p_norm_sparsity_matrix(A, 0.4, 2, min_per_row, min_per_col)
-A_id = bin_sparse_matrix!(A, A_pat, max_num_bin)
-
-sps_compute([1;2;0], 0.6, 2, 200)
+# A_pat = p_norm_sparsity_matrix(A, 0.4, 2, min_per_row, min_per_col)
+# A_id = bin_sparse_matrix!(A, A_pat, max_num_bin)
 
 # pinv_ATA = pinv_A * pinv_A'
 # pinv_AAT = pinv_A' * pinv_A

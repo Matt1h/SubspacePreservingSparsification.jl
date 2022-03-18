@@ -25,13 +25,18 @@ julia> bin_sparse_matrix!([4 1 4.01; 0.1 17.1 17; 0.2 4 29], sparse([1 0 1; 0 1 
 """
 function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
     @assert max_num_bins >= 0 "max_num_bins must be non-negative"
-    @assert size(M) == size(M_id) "M must be the same size as M_id"
+    @assert size(M, 1) == size(M_id, 1) && size(M, 2) == size(M_id, 2) "M must be the same size as M_id"
+
+    if T <: Integer
+        M = 1.0*M
+    end
+    P = eltype(M)
 
     m, n = size(M_id)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
 
-    separated_at = zero(T)
+    separated_at = zero(P)
 
     if max_num_bins == 0
         data = Vector(1:M_pat_nnz)
