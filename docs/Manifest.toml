@@ -111,7 +111,7 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SubspacePreservingSparsification]]
 deps = ["LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "045362900fb0f07f2e877dced7033cb286f7c2cc"
+git-tree-sha1 = "6223a186de1ba24c8070619a2f5478d2383df7e4"
 repo-rev = "speedup"
 repo-url = "C:\\Users\\mholz\\.julia\\dev\\SubspacePreservingSparsification"
 uuid = "4d1ea0e1-70d2-4753-baf0-722475fae2d0"

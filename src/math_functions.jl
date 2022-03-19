@@ -1,19 +1,19 @@
-"""
-    pinv_M, rnull_optional, lnull_optional = pinv_qr(M::AbstractArray)
+# """
+#     pinv_M, rnull_optional, lnull_optional = pinv_qr(M::AbstractArray)
 
-Compute Moore-Penrose pseudoinverse of M using a rank-revealing QR
-factorization and optionally returns an orthonormal basis for right
-and left null-space.  This can be significantly faster than using
-SVD for computing the pseudoinverse.  Moreover, A can be sparse or
-dense.
+# Compute Moore-Penrose pseudoinverse of M using a rank-revealing QR
+# factorization and optionally returns an orthonormal basis for right
+# and left null-space.  This can be significantly faster than using
+# SVD for computing the pseudoinverse.  Moreover, A can be sparse or
+# dense.
 
-# Examples
-```jldoctest
-julia> using SubspacePreservingSparsification
-julia> pinv_qr([3 8 17; 2 1 4; 8 3 21])
-([-0.10344827586206914 1.344827586206895 -0.17241379310344793;0.1149425287356321 0.8390804597701144 -0.2528735632183907;0.022988505747126506 -0.6321839080459762 0.1494252873563217], Matrix{Float64}(undef, 3, 0), Matrix{Float64}(undef, 3, 0))
-```
-"""
+# # Examples
+# ```jldoctest
+# julia> using SubspacePreservingSparsification
+# julia> pinv_qr([3 8 17; 2 1 4; 8 3 21])
+# ([-0.10344827586206914 1.344827586206895 -0.17241379310344793;0.1149425287356321 0.8390804597701144 -0.2528735632183907;0.022988505747126506 -0.6321839080459762 0.1494252873563217], Matrix{Float64}(undef, 3, 0), Matrix{Float64}(undef, 3, 0))
+# ```
+# """
 function pinv_qr(M::AbstractArray{T}) where {T}
     if T <: Integer
         M = 1.0*M
