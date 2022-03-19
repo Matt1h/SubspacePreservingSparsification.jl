@@ -1,33 +1,33 @@
-# """
-#     sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer, 
-#         impose_null_spaces=false::Bool)
+"""
+    sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer, 
+        impose_null_spaces=false::Bool)
 
-# Compute a SparseMatrixCSC{Float64, Int64} `X` for a matrix `M`, that is sparse and spectrally close to M,
-# especially in the lower end of the singular value spectrum.
+Compute a SparseMatrixCSC{Float64, Int64} `X` for a matrix `M`, that is sparse and spectrally close to M,
+especially in the lower end of the singular value spectrum.
 
-# Wrapper function over all functionality.
-# Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computetd with a
-# `ratio` in [0,1] that determines the sparsity (0 means more sparse, 1 means less) 
-# and with `p` in (0,Inf] that determines which norm is used to find the sparsity pattern.
-# Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
-# determines whats the maximum number of bins (200-1000 is a reasonable choice). `max_num_bins == 0`
-# means no binning is performed and can lead to significant slowdown.
-# Then an optimization problem, with constraints given by the binning pattern, is solved to find an 
-# sparse approximation `X` for `M`.
-# If `impose_null_spaces == true`, another optimization problem is solved that ensures that `X` and
-# `M` have the same null space.
+Wrapper function over all functionality.
+Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computetd with a
+`ratio` in [0,1] that determines the sparsity (0 means more sparse, 1 means less) 
+and with `p` in (0,Inf] that determines which norm is used to find the sparsity pattern.
+Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
+determines whats the maximum number of bins (200-1000 is a reasonable choice). `max_num_bins == 0`
+means no binning is performed and can lead to significant slowdown.
+Then an optimization problem, with constraints given by the binning pattern, is solved to find an 
+sparse approximation `X` for `M`.
+If `impose_null_spaces == true`, another optimization problem is solved that ensures that `X` and
+`M` have the same null space.
 
-# See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
+See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
 
-# # Examples
-# ```jldoctest
-# julia> using SubspacePreservingSparsification
-# julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
-# 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
-#  16.8041  64.2499
-#    ⋅      16.8041
-# ```
-# """
+# Examples
+```jldoctest
+julia> using SubspacePreservingSparsification
+julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
+2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
+ 16.8041  64.2499
+   ⋅      16.8041
+```
+"""
 function sps_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
     impose_null_spaces=false::Bool) where{T}
 

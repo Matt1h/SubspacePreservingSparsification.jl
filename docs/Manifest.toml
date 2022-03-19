@@ -30,9 +30,9 @@ version = "0.8.6"
 
 [[deps.Documenter]]
 deps = ["ANSIColoredPrinters", "Base64", "Dates", "DocStringExtensions", "IOCapture", "InteractiveUtils", "JSON", "LibGit2", "Logging", "Markdown", "REPL", "Test", "Unicode"]
-git-tree-sha1 = "cd0eb78e9b4202891ac61e74ca84402d01bafeba"
+git-tree-sha1 = "7d9a46421aef53cbd6b8ecc40c3dcbacbceaf40e"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "0.27.14"
+version = "0.27.15"
 
 [[deps.IOCapture]]
 deps = ["Logging", "Random"]
@@ -111,9 +111,9 @@ uuid = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [[deps.SubspacePreservingSparsification]]
 deps = ["LinearAlgebra", "SparseArrays"]
-git-tree-sha1 = "6223a186de1ba24c8070619a2f5478d2383df7e4"
+git-tree-sha1 = "add69700f6993dc969f46a87f555944fec9d96db"
 repo-rev = "speedup"
-repo-url = "C:\\Users\\mholz\\.julia\\dev\\SubspacePreservingSparsification"
+repo-url = ".."
 uuid = "4d1ea0e1-70d2-4753-baf0-722475fae2d0"
 version = "0.1.0"
 
