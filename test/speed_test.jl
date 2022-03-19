@@ -14,13 +14,14 @@ function init_script()
 end
 
 init_script()
-# sq = "square100"
-# file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", "centrosymmetric.mat"))
-# A = read(file, "A")
-# close(file)
+
+sq = "square100"
+file = matopen(joinpath("test", "test_data", sq, "untransformed_matrices", "centrosymmetric.mat"))
+A = read(file, "A")
+close(file)
 
 
-# max_num_bin = 50
+max_num_bin = 50
 
 # pinv_A, rnull, lnull = pinv_qr(A)
 
@@ -50,8 +51,8 @@ init_script()
 # J = reverse(sparse(I, size(X)[1], size(X)[1]), dims=1)
 # norm(X*J - J*X)
 
-# print("Computation\n")
-# @benchmark ssa_compute($A, 0.4, 2, max_num_bin, true)
+print("Computation\n")
+@benchmark sps_compute($A, 0.4, 2, max_num_bin, true)
 
 # function speedtest()
 #     for i in 1:100

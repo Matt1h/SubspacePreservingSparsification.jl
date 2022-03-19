@@ -21,6 +21,7 @@ See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest
+julia> using SubspacePreservingSparsification
 julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499
@@ -38,10 +39,8 @@ function sps_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::In
 
     # sparsity pattern
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
-    # min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
-    # min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
-    min_per_row = 0
-    min_per_col = 0
+    min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
+    min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
 
     M_id = p_norm_sparsity_matrix(M, ratio, p, min_per_row, min_per_col)
 
