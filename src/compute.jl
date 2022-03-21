@@ -1,20 +1,21 @@
 """
-    sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer, 
+    sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer,
         impose_null_spaces=false::Bool)
 
-Compute a SparseMatrixCSC{Float64, Int64} `X` for a matrix `M`, that is sparse and spectrally close to M,
+Compute a `SparseMatrixCSC{Float64, Int64}` `X` for a matrix `M`, that is sparse and spectrally close to `M`,
 especially in the lower end of the singular value spectrum.
 
 Wrapper function over all functionality.
-Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computetd with a
-`ratio` in [0,1] that determines the sparsity (0 means more sparse, 1 means less) 
-and with `p` in (0,Inf] that determines which norm is used to find the sparsity pattern.
+
+Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computed with a
+`ratio` in ``[0,1]`` that determines the sparsity (`0` means more sparse, `1` means less)
+and with `p` in ``(0, \\infty ]`` that determines which norm is used to find the sparsity pattern.
 Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
-determines whats the maximum number of bins (200-1000 is a reasonable choice). `max_num_bins == 0`
+determines whats the maximum number of bins is (200-1000 is a reasonable choice). `max_num_bins=0`
 means no binning is performed and can lead to significant slowdown.
-Then an optimization problem, with constraints given by the binning pattern, is solved to find an 
+Then an optimization problem, with constraints given by the binning pattern, is solved to find a
 sparse approximation `X` for `M`.
-If `impose_null_spaces == true`, another optimization problem is solved that ensures that `X` and
+If `impose_null_spaces=true`, another optimization problem is solved that ensures that `X` and
 `M` have the same null space.
 
 See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).

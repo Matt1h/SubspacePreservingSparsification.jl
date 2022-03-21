@@ -1,10 +1,10 @@
 """
     pinv_M, rnull_optional, lnull_optional = pinv_qr(M::AbstractArray)
 
-Compute Moore-Penrose pseudoinverse of M using a rank-revealing QR
+Computes Moore-Penrose pseudoinverse of `M` using a rank-revealing QR
 factorization and optionally returns an orthonormal basis for right
-and left null-space.  This can be significantly faster than using
-SVD for computing the pseudoinverse.  Moreover, A can be sparse or
+and left null-space. This can be significantly faster than using
+SVD for computing the pseudoinverse.  Moreover, `A` can be sparse or
 dense.
 
 # Examples

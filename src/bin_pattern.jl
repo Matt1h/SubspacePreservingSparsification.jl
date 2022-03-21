@@ -3,13 +3,13 @@
 
 Compute a Binning pattern in `M_id` from the sparsity pattern in `M_id`.
 
-`M_id` is SparseMatrixCSC{Int64, Int64} with the same shape as `M`, 
-when handed over it contains only 0 and 1. After usage it contains an Integer 
-corresponding to a bin or 0. According to the Binning Pattern, 
+`M_id` is SparseMatrixCSC{Int64, Int64} with the same shape as `M`,
+when handed over it contains only 0 and 1. After usage it contains an Integer
+corresponding to a bin or 0. According to the Binning Pattern,
 similar valued entries can be considered the same.
 
-`M` is the matrix whose entries are used for binning. `max_num_bins` is the maximum 
-number of bins and must be non-negativ, if `max_num_bins == 0`, no binning is
+`M` is the matrix whose entries are used for binning. `max_num_bins` is the maximum
+number of bins and must be non-negative, if `max_num_bins=0`, no binning is
 performed and only the sparsity pattern in `M_id` is used then.
 
 See also: [`sps_compute`](@ref), [`p_norm_sparsity_matrix`](@ref).
