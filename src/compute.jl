@@ -21,7 +21,6 @@ See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest
-julia> using SubspacePreservingSparsification
 julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499

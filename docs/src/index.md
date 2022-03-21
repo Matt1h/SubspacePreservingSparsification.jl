@@ -1,4 +1,5 @@
 ```@meta
+CurrentModule = SubspacePreservingSparsification
 DocTestSetup = quote
     using SparseArrays
     using SubspacePreservingSparsification
@@ -15,10 +16,15 @@ julia> ]add SSA
 ```
 
 ## Example
-
 ```jldoctest
 julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499
    ⋅      16.8041
+```
+
+## API reference
+```@autodocs
+Modules = [SubspacePreservingSparsification]
+Order   = [:function, :type]
 ```
