@@ -15,7 +15,6 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - '1.0'
           - '1'
           - 'nightly'
         os:
@@ -63,7 +62,7 @@ jobs:
             using SubspacePreservingSparsification
             DocMeta.setdocmeta!(SubspacePreservingSparsification, :DocTestSetup, :(using SubspacePreservingSparsification); recursive=true)
             doctest(SubspacePreservingSparsification)'
-      - run: julia --project=docs/ --code-coverage=user docs/make.jl
+      - run: julia --color=yes --project=docs/ --code-coverage=user docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
