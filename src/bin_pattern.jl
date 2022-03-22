@@ -15,7 +15,7 @@ performed and only the sparsity pattern in `M_id` is used then.
 See also: [`sparsify`](@ref), [`sparsity_pattern`](@ref).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> bin_sparse_matrix!([4 1 4.01; 0.1 17.1 17; 0.2 4 29], sparse([1 0 1; 0 1 1; 0 0 1]), 200)
 3×3 SparseMatrixCSC{Int64, Int64} with 5 stored entries:
  1  ⋅  1

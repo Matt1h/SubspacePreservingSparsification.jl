@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Launch Julia tests",
             "program": "${workspaceFolder}/test/speed_test.jl",
-            "juliaEnv": "C:\\Users\\mholz\\AppData\\Local\\Temp\\jl_kshz3n",
+            "juliaEnv": "C:\\Users\\mholz\\AppData\\Local\\Temp\\jl_pBEAZR",
             "stopOnEntry": true
         },
         {

@@ -16,7 +16,7 @@ Defaults are `0`.
 See also: [`sparsify`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> sparsity_pattern([4 1; 0.1 17], 0.6, 2)
 2×2 SparseMatrixCSC{Int64, Int64} with 2 stored entries:
  1  ⋅

@@ -21,5 +21,5 @@ close(file)
 
 max_num_bin = 50
 
-print("Computation\n")
-@benchmark sparsify($A, 0.4, 2, max_num_bin, true)
+# print("Computation\n")
+# @benchmark sparsify($A, 0.4, 2, max_num_bin, true)

@@ -21,7 +21,7 @@ If `impose_null_spaces=true`, another optimization problem is solved that ensure
 See also: [`sparsity_pattern`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
-```jldoctest
+```julia-repl
 julia> sparsify([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499
@@ -86,7 +86,7 @@ function binned_minimization(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
     0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
     size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
     size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
-    size(D) == size(M) || throw(ArgumentError("D must be the same size as M"))    
+    size(D, 1) == size(M, 1) && size(D, 2) == size(M, 2) || throw(ArgumentError("D must be the same size as M"))    
 
     LS_M, LS_b = system_no_null(M, M_id, B, C, D)
     LS_M, = pinv_qr(LS_M) 
@@ -108,7 +108,7 @@ function system_no_null(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC,
     0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
     size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
     size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
-    size(D) == size(M) || throw(ArgumentError("D must be the same size as M"))    
+    size(D, 1) == size(M, 1) && size(D, 2) == size(M, 2) || throw(ArgumentError("D must be the same size as M"))     
 
     N = length(unique(M_id.nzval))
 
@@ -155,9 +155,9 @@ end
 
 
 function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray{T}, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
-     tol=eps(T)::Real, max_iters=1000::Integer) where{T}
+     tol=eps(T)::Real, max_iters=300::Integer) where{T}
     tol > 0 || throw(DomainError("tol has to be greater than zero"))
-    size(M) == size(Y) || throw(ArgumentError("Y must be the same size as"))
+    size(M, 1) == size(Y, 1) && size(M, 2) == size(Y, 2) || throw(ArgumentError("Y must be the same size as"))
 
     m = size(Y, 1)
     n = size(Y, 2)
