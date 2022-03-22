@@ -12,7 +12,7 @@ similar valued entries can be considered the same.
 number of bins and must be non-negative, if `max_num_bins=0`, no binning is
 performed and only the sparsity pattern in `M_id` is used then.
 
-See also: [`sps_compute`](@ref), [`p_norm_sparsity_matrix`](@ref).
+See also: [`sparsify`](@ref), [`sparsity_pattern`](@ref).
 
 # Examples
 ```jldoctest
@@ -24,25 +24,20 @@ julia> bin_sparse_matrix!([4 1 4.01; 0.1 17.1 17; 0.2 4 29], sparse([1 0 1; 0 1 
 ```
 """
 function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer) where {T}
-    @assert max_num_bins >= 0 "max_num_bins must be non-negative"
-    @assert size(M, 1) == size(M_id, 1) && size(M, 2) == size(M_id, 2) "M must be the same size as M_id"
+    max_num_bins >= 0 || throw(DomainError(max_num_bins, "max_num_bin must be non-negative"))
+    size(M, 1) == size(M_id, 1) && size(M, 2) == size(M_id, 2) || throw(ArgumentError("M must be the same size as M_id"))
 
-    if T <: Integer
-        M = 1.0*M
-    end
-    P = eltype(M)
-
-    m, n = size(M_id)
+    m = size(M_id, 1)
+    n = size(M_id, 2)
     M_i, M_j = findnz(M_id)
     M_pat_nnz = count(!iszero, M_id)
 
-    separated_at = zero(P)
+    separated_at = zero(T)
 
     if max_num_bins == 0
-        data = Vector(1:M_pat_nnz)
-        M_id[:, :] = sparse(M_i, M_j, data, m, n)
+        M_id[:, :] = sparse(M_i, M_j, 1:M_pat_nnz, m, n)
     else
-        nz_M = zeros(M_pat_nnz)
+        nz_M = zeros(T, M_pat_nnz)
 
         for k in 1:M_pat_nnz
             nz_M[k] = M[M_i[k], M_j[k]]
@@ -53,6 +48,11 @@ function bin_sparse_matrix!(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC, 
         M_id[:, :] = sparse(M_i, M_j, new_ids, m, n)
     end
     return M_id
+end
+
+
+function bin_sparse_matrix!(M::AbstractArray{<:Int}, M_id::AbstractSparseMatrixCSC, max_num_bins::Integer)
+    return bin_sparse_matrix!(float(M), M_id, max_num_bins)
 end
 
 _extrema(v) = isempty(v) ? (Inf, -Inf) : extrema(v)
@@ -68,14 +68,14 @@ end
 function binned_with_separated_min_max(v::AbstractVector{T}, max_num_bins::Integer,
     min_left::Real, max_left::Real, min_right::Real, max_right::Real, separated_at::Real) where{T}
     n = length(v)
-5
+
     if min_left <= max_left
-        @assert all(min_left .<= v) "some element of v is less than min_left"
-        @assert min_left <= separated_at "incompatible min_left and separated_at"
+        all(min_left .<= v) || throw(ArgumentError("some element of v is less than min_left"))
+        min_left <= separated_at || throw(ArgumentError("incompatible min_left and separated_at"))
     end
     if min_right <= max_right
-        @assert all(v .<= max_right) "some element of v is greater than max_right"
-        @assert separated_at <= max_right "incompatible separated_at and max_right"
+        all(v .<= max_right) || throw(ArgumentError("some element of v is greater than max_right"))
+        separated_at <= max_right || throw(ArgumentError("incompatible separated_at and max_right"))
     end
 
     if max_left == min_right
@@ -110,7 +110,7 @@ function binned_with_separated_min_max(v::AbstractVector{T}, max_num_bins::Integ
     inv_h_l = max_n_left_bins / left_dist
     inv_h_r = max_n_right_bins / right_dist
 
-    fuzz = 1E2  # magic constant from matlab
+    fuzz::T = 1E2  # magic constant from matlab
 
     left_tol = fuzz * eps(T) * left_dist
     right_tol = fuzz * eps(T) * right_dist
@@ -145,7 +145,7 @@ function bin_mapping(bin_ids::AbstractVector{<:Integer})
     min_id, max_id = _extrema(bin_ids)
     impossible_id = typemin(Int)
 
-    @assert impossible_id != min_id "input array must not contain the minimum int"
+    impossible_id != min_id || throw(DomainError("input array must not contain the minimum int"))
 
     num_bins = max_id - min_id + 1
     work_array = impossible_id * ones(Int, num_bins)

@@ -7,19 +7,19 @@ using LinearAlgebra
 sq = "square10"
 
 function default_ssa_compute_bin_no_null(M)
-    M = sps_compute(M, 0.4, 2, 50)
+    M = sparsify(M, 0.4, 2, 50)
     return M
 end
 
 
 function default_ssa_compute_no_bin_no_null(M)
-    M = sps_compute(M, 0.4, 2, 0)
+    M = sparsify(M, 0.4, 2, 0)
     return M
 end
 
 
 function my_default_ssa_compute_bin_null(M)
-    M = sps_compute(M, 0.4, 2, 50, true)
+    M = sparsify(M, 0.4, 2, 50, true)
     return M
 end
 
@@ -31,7 +31,7 @@ function my_default_compute_sparse_pattern(M)
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
-    M = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
+    M = sparsity_pattern(M, 0.4, 2, min_per_row, min_per_col)
     return M
 end
 
@@ -43,7 +43,7 @@ function my_default_compute_bin_pattern(M)
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
-    M_pat = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
+    M_pat = sparsity_pattern(M, 0.4, 2, min_per_row, min_per_col)
     M = bin_sparse_matrix!(M, M_pat, 50)
     return M
 end

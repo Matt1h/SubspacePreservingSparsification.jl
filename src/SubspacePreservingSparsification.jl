@@ -10,8 +10,9 @@ include("bin_pattern.jl")
 include("compute.jl")
 
 export pinv_qr
-export p_norm_sparsity_matrix
+export sparsity_pattern
 export bin_sparse_matrix!
-export sps_compute
+export binned_minimization
+export sparsify
 
 end  # end of module

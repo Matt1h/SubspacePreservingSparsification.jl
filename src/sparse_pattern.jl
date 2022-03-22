@@ -1,5 +1,5 @@
 """
-    p_norm_sparsity_matrix(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
+    sparsity_pattern(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
 
 Compute a pattern matrix `M_pat` which is a p-norm sparsity pattern for `M`.
 
@@ -13,21 +13,21 @@ contains only 0 or 1.
 
 Defaults are `0`.
 
-See also: [`sps_compute`](@ref), [`bin_sparse_matrix!`](@ref).
+See also: [`sparsify`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest
-julia> p_norm_sparsity_matrix([4 1; 0.1 17], 0.6, 2)
+julia> sparsity_pattern([4 1; 0.1 17], 0.6, 2)
 2×2 SparseMatrixCSC{Int64, Int64} with 2 stored entries:
  1  ⋅
  ⋅  1
 ```
 """
-function p_norm_sparsity_matrix(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
-    @assert 0 <= ratio <= 1 "ration must be in [0,1]"
-    @assert p > 0 "p must be greater than zero"
-    @assert min_per_row >= 0 "min_per_row must be greater equal zero"
-    @assert min_per_col >= 0 "min_per_col must be greater equal zero"
+function sparsity_pattern(M::AbstractArray, ratio::Real, p::Real, min_per_row=0::Integer, min_per_col=0::Integer)
+    0 <= ratio <= 1 || throw(DomainError(ratio, "ratio must be in [0,1]"))
+    p > 0 || throw(DomainError(p, "p must be greater than zero"))
+    min_per_row >= 0|| throw(DomainError("min_per_row must be greater equal zero"))
+    min_per_col >= 0|| throw(DomainError("min_per_col must be greater equal zero"))    
     
     # todo make almost symmetric matrices symmetric
     m = size(M, 1)
@@ -45,9 +45,9 @@ end
 
 
 function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num_nnz::Integer)
-    @assert p > 0 "p must be greater than zero"
-    @assert 0 <= ratio <= 1 "ration must be in [0,1]"
-    @assert min_num_nnz >= 0 "min_num_nnz must be greater equal zero"
+    0 <= ratio <= 1 || throw(DomainError(ratio, "ratio must be in [0,1]"))
+    p > 0 || throw(DomainError(p, "p must be greater than zero"))
+    min_num_nnz >= 0|| throw(DomainError("min_num_nnz must be greater equal zero"))
 
     n = length(v)
 
@@ -60,8 +60,7 @@ function p_norm_sparsity_vector(v::AbstractVector, ratio::Real, p::Real, min_num
         return v_pat
     end
 
-    @assert nnz_v >= min_num_nnz "minimum number for non zeros entries bigger than non zero entries"
-    @assert nnz_v >= 0 "minimum number for non zeros entries must be greater equal zero"
+    nnz_v >= min_num_nnz || throw(ArgumentError("minimum number for non zeros entries bigger than non zero entries in v"))
 
     idx = sortperm(v)
     v = v[idx]

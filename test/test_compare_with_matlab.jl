@@ -7,19 +7,19 @@ using LinearAlgebra
 sq = "square10"
 
 function default_ssa_compute_bin_no_null(M)
-    M = @inferred sps_compute(M, 0.4, 2, 50)
+    M = @inferred sparsify(M, 0.4, 2, 50)
     return M
 end
 
 
 function default_ssa_compute_no_bin_no_null(M)
-    M = @inferred sps_compute(M, 0.4, 2, 0)
+    M = @inferred sparsify(M, 0.4, 2, 0)
     return M
 end
 
 
 function my_default_ssa_compute_bin_null(M)
-    M = @inferred sps_compute(M, 0.4, 2, 50, true)
+    M = @inferred sparsify(M, 0.4, 2, 50, true)
     return M
 end
 
@@ -31,7 +31,7 @@ function my_default_compute_sparse_pattern(M)
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
-    M = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
+    M = sparsity_pattern(M, 0.4, 2, min_per_row, min_per_col)
     return M
 end
 
@@ -43,7 +43,7 @@ function my_default_compute_bin_pattern(M)
     num_near_zero_rows, num_near_zero_cols = near_zero_row_col(M)
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M)[2]))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M)[1]))
-    M_pat = p_norm_sparsity_matrix(M, 0.4, 2, min_per_row, min_per_col)
+    M_pat = sparsity_pattern(M, 0.4, 2, min_per_row, min_per_col)
     M = @inferred bin_sparse_matrix!(M, M_pat, 50)
     return M
 end
@@ -80,7 +80,7 @@ for i_type_name in type_names
     for j_trans_name in trans_names
         trans = transformations[j_trans_name]
         trans_A = trans(A)
-        if typeof(trans_A) == Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}  # TODO: more general?
+        if typeof(trans_A) == Tuple{Matrix{Float64}, Matrix{Float64}, Matrix{Float64}}
             trans_A = trans_A[1]
         end
         if typeof(trans_A) != Matrix{Float64}
@@ -88,8 +88,8 @@ for i_type_name in type_names
         end
         file = matopen(joinpath("test", "test_data", sq, 
         "transformed_matrices", "matlab", i_type_name, j_trans_name*".mat"))
-        trans_A_mat = read(file, "trans_A")  # TODO: no sparse matrix
+        trans_A_mat = read(file, "trans_A")
         close(file)
-        @test norm(trans_A - trans_A_mat) < tol
+        @test trans_A ≈ trans_A_mat
     end
 end

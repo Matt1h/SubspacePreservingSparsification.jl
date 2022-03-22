@@ -1,5 +1,5 @@
 """
-    sps_compute(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer,
+    sparsify(M::AbstractArray, ratio::Real, p::Real, max_num_bins::Integer,
         impose_null_spaces=false::Bool)
 
 Compute a `SparseMatrixCSC{Float64, Int64}` `X` for a matrix `M`, that is sparse and spectrally close to `M`,
@@ -18,22 +18,18 @@ sparse approximation `X` for `M`.
 If `impose_null_spaces=true`, another optimization problem is solved that ensures that `X` and
 `M` have the same null space.
 
-See also: [`p_norm_sparsity_matrix`](@ref), [`bin_sparse_matrix!`](@ref).
+See also: [`sparsity_pattern`](@ref), [`bin_sparse_matrix!`](@ref).
 
 # Examples
 ```jldoctest
-julia> sps_compute([16.99 65; 0.1 17.01], 0.6, 2, 200)
+julia> sparsify([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
  16.8041  64.2499
    ⋅      16.8041
 ```
 """
-function sps_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
+function sparsify(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
     impose_null_spaces=false::Bool) where{T}
-
-    if T <: Integer
-        M = 1.0*M
-    end
     
     pinv_M, rnull, lnull = pinv_qr(M)
 
@@ -42,15 +38,23 @@ function sps_compute(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::In
     min_per_row = max(0, min(size(rnull)[2] - num_near_zero_cols, size(M, 2)))
     min_per_col = max(0, min(size(lnull)[2] - num_near_zero_rows, size(M, 1)))
 
-    M_id = p_norm_sparsity_matrix(M, ratio, p, min_per_row, min_per_col)
+    M_id = sparsity_pattern(M, ratio, p, min_per_row, min_per_col)
 
     # binning pattern
     bin_sparse_matrix!(M, M_id, max_num_bins)
 
     # minimization
-    X = sps_minimization(M, M_id, pinv_M)
+    pinv_MTM = pinv_M * pinv_M'
+    pinv_MMT = pinv_M' * pinv_M
+    D = M * pinv_MTM + pinv_MMT * M
+    X = binned_minimization(M, M_id, pinv_MTM, pinv_MMT, D)
     impose_null_spaces && sps_impose_action!(X, M, rnull, lnull)
     return X
+end
+
+
+function sparsify(M::AbstractArray{<:Int}, ratio::Real, p::Real, max_num_bins::Integer, impose_null_spaces=false::Bool)
+    return sparsify(float(M), ratio, p, max_num_bins, impose_null_spaces)
 end
 
 
@@ -67,87 +71,49 @@ function near_zero_row_col(M::AbstractArray{T}) where {T}
 end
 
 
-function sps_minimization!(M, M_id, pinv_M)
-    pinv_MTM = pinv_M * pinv_M'
-    pinv_MMT = pinv_M' * pinv_M
-    LS_M, LS_b = sps_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
-    LS_M, = pinv_qr(LS_M)
-    LS_x = LS_M * LS_b
-
-    M[:, :] = sps_unknown_to_matrix(LS_x, M_id)
-    return M
+function near_zero_row_col(M::AbstractArray{<:Int})
+    near_zero_row_col(float(M))
 end
 
 
-function sps_minimization(M, M_id, pinv_M)
-    @assert size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) "M_id must be the same size as M"
-    @assert 0 <= minimum(M_id) "M_id contains negative integers"
-    @assert size(M, 1) == size(pinv_M, 2) && size(M, 2) == size(pinv_M, 1) "size of pinv_M and M do not match"
+function binned_minimization(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
+    B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix)
+    m = size(M, 1)
+    n = size(M, 2)
 
-    pinv_MTM = pinv_M * pinv_M'
-    pinv_MMT = pinv_M' * pinv_M
-    LS_M, LS_b = sps_system_no_null(M, M_id, pinv_MTM, pinv_MMT)
+    size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) || 
+    throw(ArgumentError("M_id must be the same size as M"))
+    0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
+    size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
+    size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
+    size(D) == size(M) || throw(ArgumentError("D must be the same size as M"))    
+
+    LS_M, LS_b = system_no_null(M, M_id, B, C, D)
     LS_M, = pinv_qr(LS_M) 
 
     LS_x = LS_M * LS_b
 
-    Y = sps_unknown_to_matrix(LS_x, M_id)
+    Y = unknown_to_matrix(LS_x, M_id)
     return Y
 end
 
 
-function sps_system_no_null(M::AbstractArray, M_id::AbstractSparseMatrixCSC, pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+function system_no_null(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC,
+    B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix) where{T}
     m = size(M, 1)
     n = size(M, 2)
-    @assert size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) "M_id must be the same size as M"
-    @assert 0 <= minimum(M_id) "M_id contains negative integers"
-    @assert size(pinv_MTM)[1] == size(pinv_MTM)[2] == n "pinv_MTM has wrong size"
-    @assert size(pinv_MMT)[1] == size(pinv_MMT)[2] == m "pinv_MMT has wrong size"
+
+    size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) || 
+    throw(ArgumentError("M_id must be the same size as M"))
+    0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
+    size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
+    size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
+    size(D) == size(M) || throw(ArgumentError("D must be the same size as M"))    
 
     N = length(unique(M_id.nzval))
 
-    D = M * pinv_MTM + pinv_MMT * M
-
-    LS_A = zeros(Float64, (N, N))
-    LS_b = zeros(Float64, N)
-
-    for idx in findall(!iszero, M_id)
-        J, L = findnz(M_id[Tuple(idx)[1], :])
-        k = 1
-        for l in L
-            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + pinv_MTM[J[k], Tuple(idx)[2]]
-            k += 1
-        end
-
-        J, L = findnz(M_id[:, Tuple(idx)[2]])
-        k = 1
-        for l in L
-            @views LS_A[M_id[idx], l] = LS_A[M_id[idx], l] + pinv_MMT[Tuple(idx)[1], J[k]]
-            k += 1
-        end
-    end
-
-    @views for i in 1:N
-        LS_b[i] = sum(D[M_id .== i])
-    end
-
-    return LS_A, LS_b
-end
-
-
-function sps_system_no_null_general(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
-    B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix)
-    m, n = size(M)
-    @assert size(B)[1] == size(B)[2] == n "B has wrong size"
-    @assert size(C)[1] == size(C)[2] == m "C has wrong size"
-    @assert size(D) == size(M) "D must be the same size as M"
-    @assert size(M_id) == size(M) "M_id must be the same size as M"
-    @assert 0 <= minimum(M_id) "M_id contains negative integers"
-
-    N = length(unique(M_id.nzval))
-
-    LS_A = zeros(Float64, (N, N))
-    LS_b = zeros(Float64, N)
+    LS_A = zeros(T, (N, N))
+    LS_b = zeros(T, N)
 
     for idx in findall(!iszero, M_id)
         J, L = findnz(M_id[Tuple(idx)[1], :])
@@ -173,24 +139,33 @@ function sps_system_no_null_general(M::AbstractArray, M_id::AbstractSparseMatrix
 end
 
 
-function sps_unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrixCSC)
-    m, n = size(M_id)
+function system_no_null(M::AbstractArray{<:Int}, M_id::AbstractSparseMatrixCSC, 
+    pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
+    return system_no_null(float(M), M_id, pinv_MTM, pinv_MMT)
+end
+
+
+function unknown_to_matrix(x::AbstractVector, M_id::AbstractSparseMatrixCSC)
+    m = size(M_id, 1)
+    n = size(M_id, 2)
+
     M_id_i, M_id_j, M_id_v = findnz(M_id)
     return sparse(M_id_i, M_id_j, x[M_id_v], m, n)
 end
 
 
-function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
-     tol=eps(Float64)::Real, max_iters=1000::Integer)
-    @assert tol > 0 "tol has to be greater than zero"
-    @assert size(M) == size(Y) "Y must be the same size as"
+function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray{T}, R_mat::AbstractMatrix, L_mat::AbstractMatrix,
+     tol=eps(T)::Real, max_iters=1000::Integer) where{T}
+    tol > 0 || throw(DomainError("tol has to be greater than zero"))
+    size(M) == size(Y) || throw(ArgumentError("Y must be the same size as"))
 
-    m, n = size(Y)
+    m = size(Y, 1)
+    n = size(Y, 2)
     nR1, nR2 = size(R_mat)
     nL1, nL2 = size(L_mat)
 
-    @assert n == nR1 "Y * R_mat not possible"
-    @assert m == nL1 "Y' * L_mat not possible"
+    n == nR1 || throw(ArgumentError("Y * R_mat not possible"))
+    m == nL1 || throw(ArgumentError("Y' * L_mat not possible"))
 
     # Quantities don't change when iterating
     norm_R_mat = norm(R_mat)
@@ -203,8 +178,8 @@ function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat:
     Y_i, Y_j, _ = findnz(Y)
 
     # Quantities that do change when iterating
-    Lag_R = zeros(m, nR2)
-    Lag_L = zeros(n, nL2)
+    Lag_R = zeros(T, m, nR2)
+    Lag_L = zeros(T, n, nL2)
 
     d_R = Y * R_mat - M_R_mat
     d_L = Y' * L_mat - M_L_mat
@@ -212,9 +187,9 @@ function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat:
     q_R = - d_R
     q_L = - d_L
 
-    d_R_proj_vec = zeros(nnz_Y, 1)
-    d_L_proj_vec = zeros(nnz_Y, 1)
-    d_proj_vec = zeros(nnz_Y, 1)
+    d_R_proj_vec = zeros(T, nnz_Y, 1)
+    d_L_proj_vec = zeros(T, nnz_Y, 1)
+    d_proj_vec = zeros(T, nnz_Y, 1)
 
     iters = 1
     for i in 1:max_iters
@@ -253,3 +228,10 @@ function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray, R_mat:
     end
     return Y
 end
+
+
+function sps_impose_action!(Y::AbstractSparseMatrixCSC, M::AbstractArray{<:Int}, R_mat::AbstractMatrix, 
+    L_mat::AbstractMatrix, tol::Real, max_iters=1000::Integer)
+    return sps_impose_action!(Y, float(M), R_mat, L_mat, eps(eltype(M)), max_iters)
+end
+
