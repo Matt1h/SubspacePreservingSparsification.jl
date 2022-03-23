@@ -1,0 +1,9 @@
+centrosymmetric
+circulant
+hamiltonian
+persymmetric
+skew_centrosymmetric
+skew_hamiltonian
+skew_persymmetric
+skew_symmetric
+symmetric
