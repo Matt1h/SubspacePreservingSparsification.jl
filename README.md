@@ -1,5 +1,8 @@
 # SubspacePreservingSparsification.jl
-[![][docs-dev-img]][docs-dev-url]
+|      **Documentation**                 |
+|:---------------------------------------|
+|      [![][docs-dev-img]][docs-dev-url] |
+
 Implementation of an algorithm, that takes a real Matrix M and finds a sparse approximation of the same size. The algorithm was developed by Chetan Jhurani under the name sparse spectral approximation (SSA). See [https://github.com/cjhurani/txssa](https://github.com/cjhurani/txssa) for more detailed documentation, also with regard to the mathematical background, and for implementations in C/C++ and in Matlab.
 
 ## Installation
