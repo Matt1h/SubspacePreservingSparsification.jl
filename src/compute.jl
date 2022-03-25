@@ -47,7 +47,7 @@ function sparsify(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integ
     pinv_MTM = pinv_M * pinv_M'
     pinv_MMT = pinv_M' * pinv_M
     D = M * pinv_MTM + pinv_MMT * M
-    X = binned_minimization(M, M_id, pinv_MTM, pinv_MMT, D)
+    X = binned_minimization(M_id, pinv_MTM, pinv_MMT, D)
     impose_null_spaces && sps_impose_action!(X, M, rnull, lnull)
     return X
 end
@@ -76,19 +76,38 @@ function near_zero_row_col(M::AbstractArray{<:Int})
 end
 
 
-function binned_minimization(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
+"""
+    binned_minimization(M_id::AbstractSparseMatrixCSC,
     B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix)
-    m = size(M, 1)
-    n = size(M, 2)
 
-    size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) || 
-    throw(ArgumentError("M_id must be the same size as M"))
+Solves a optimization problem of the from
+
+```math
+Y A + B Y = D.
+```
+under the binning constraints given in the `SparseMatrixCSC{Int64, Int64}` `M_id`.
+
+See also: [`sparsify`](@ref).
+
+# Examples
+```julia-repl
+julia> binned_minimization([16.99 65 64.96; 0.1 17.01 0.1], sparse([1 2 2; 0 1 0]), Matrix(I, 3, 3) , Matrix(I, 2, 2), Matrix(I, 2, 3))
+2×3 SparseMatrixCSC{Float64, Int64} with 4 stored entries:
+ 0.5  0.0  0.0
+  ⋅   0.5   ⋅
+```
+"""
+function binned_minimization(M_id::AbstractSparseMatrixCSC,
+    B::AbstractMatrix{T}, C::AbstractMatrix{T}, D::AbstractMatrix{T}) where{T}
+    m = size(M_id, 1)
+    n = size(M_id, 2)
+
     0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
     size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
     size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
-    size(D, 1) == size(M, 1) && size(D, 2) == size(M, 2) || throw(ArgumentError("D must be the same size as M"))    
+    size(D, 1) == size(M_id, 1) && size(D, 2) == size(M_id, 2) || throw(ArgumentError("D must be the same size as M"))    
 
-    LS_M, LS_b = system_no_null(M, M_id, B, C, D)
+    LS_M, LS_b = system_no_null(M_id, B, C, D)
     LS_M, = pinv_qr(LS_M) 
 
     LS_x = LS_M * LS_b
@@ -98,17 +117,14 @@ function binned_minimization(M::AbstractArray, M_id::AbstractSparseMatrixCSC,
 end
 
 
-function system_no_null(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC,
-    B::AbstractMatrix, C::AbstractMatrix, D::AbstractMatrix) where{T}
-    m = size(M, 1)
-    n = size(M, 2)
+function system_no_null(M_id::AbstractSparseMatrixCSC, B::AbstractMatrix{T}, C::AbstractMatrix{T}, D::AbstractMatrix{T}) where{T}
+    m = size(M_id, 1)
+    n = size(M_id, 2)
 
-    size(M_id, 1) == size(M, 1) && size(M_id, 2) == size(M, 2) || 
-    throw(ArgumentError("M_id must be the same size as M"))
     0 <= minimum(M_id) || throw(DomainError(minimum(M_id), "M_id contains negative integers"))
     size(B)[1] == size(B)[2] == n || throw(ArgumentError("B has wrong size"))    
     size(C)[1] == size(C)[2] == m || throw(ArgumentError("C has wrong size"))
-    size(D, 1) == size(M, 1) && size(D, 2) == size(M, 2) || throw(ArgumentError("D must be the same size as M"))     
+    size(D, 1) == size(M_id, 1) && size(D, 2) == size(M_id, 2) || throw(ArgumentError("D must be the same size as M"))     
 
     N = length(unique(M_id.nzval))
 
@@ -136,12 +152,6 @@ function system_no_null(M::AbstractArray{T}, M_id::AbstractSparseMatrixCSC,
     end
 
     return LS_A, LS_b
-end
-
-
-function system_no_null(M::AbstractArray{<:Int}, M_id::AbstractSparseMatrixCSC, 
-    pinv_MTM::AbstractMatrix, pinv_MMT::AbstractMatrix)
-    return system_no_null(float(M), M_id, pinv_MTM, pinv_MMT)
 end
 
 

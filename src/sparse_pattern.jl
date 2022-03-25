@@ -6,11 +6,9 @@ Compute a pattern matrix `M_pat` which is a p-norm sparsity pattern for `M`.
 `M_pat` is a sparse `SparseMatrixCSC{Int64, Int64}` of the same shape as `M` and
 contains only 0 or 1.
 
-`ratio` should be in ``[0,1]``.  `p` should be in ``(0, \\infty ]``
-
-* `min_per_row` is the minimum number of non-zeros needed per row.
-* `min_per_col` is the minimum number of non-zeros needed per column.
-
+`ratio` is a measure for how sparse the pattern is supposed to be and must be in ``[0,1]``.  
+`p` determines which norm is used and should be in ``(0, \\infty ]``. `min_per_row` is the minimum number 
+of non-zeros needed per row and `min_per_col` is the minimum number of non-zeros needed per column, 
 Defaults are `0`.
 
 See also: [`sparsify`](@ref), [`bin_sparse_matrix!`](@ref).

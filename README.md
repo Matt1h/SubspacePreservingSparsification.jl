@@ -7,8 +7,7 @@ To install this package and its dependencies, open the Julia REPL and run
 julia> ]add SubspacePreservingSparsification
 ```
 
-## Example
-
+## Examples
 ```jldoctest
 julia> sparsify([16.99 65; 0.1 17.01], 0.6, 2, 200)
 2×2 SparseMatrixCSC{Float64, Int64} with 3 stored entries:
