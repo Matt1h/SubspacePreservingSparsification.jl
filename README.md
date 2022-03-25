@@ -15,3 +15,9 @@ julia> sparsify([16.99 65; 0.1 17.01], 0.6, 2, 200)
  16.8041  64.2499
    ⋅      16.8041
 ```
+
+[docs-stab-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stab-url]: https://adrhill.github.io/ExplainableAI.jl/stable
+
+[docs-dev-img]: https://img.shields.io/badge/docs-main-blue.svg
+[docs-dev-url]: https://adrhill.github.io/ExplainableAI.jl/dev
