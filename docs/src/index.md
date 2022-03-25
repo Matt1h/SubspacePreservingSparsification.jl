@@ -11,14 +11,6 @@ To install this package and its dependencies, open the Julia REPL and run
 julia> ]add SubspacePreservingSparsification
 ```
 
-## Manual
-```@contents
-Pages = [
-    "generated/example.md",
-]
-Depth = 1
-```
-
 ## API reference
 ```@autodocs
 Modules = [SubspacePreservingSparsification]

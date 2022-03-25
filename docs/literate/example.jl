@@ -7,6 +7,7 @@ using SparseArrays
 using LinearAlgebra
 M = [17.05 16.98 0.3 6.99 7; 16.98 0.2 7.1 6.9 0; 0.3 7.1 -12 0.01 17; 6.99 6.9 0.01 -11.97 0; 7 0 17 0 -0.1]
 
+# ## second layer
 # First we calculate a sparsity pattern:
 M_id = sparsity_pattern(M, 0.6, 2)
 # For every column and every row of the Matrix the function solves the optimization problem
@@ -25,7 +26,7 @@ M_id = sparsity_pattern(M, 0.6, 2)
 # patter are overlayed, if either row or column or both return a one for an entry the entry is one.
 # This ensures that the pattern will preserve different Subspaces of the Matrix. 
 
-
+# ## second layer
 # Than we can take the sparsity pattern and modify it to a binning pattern:
 bin_sparse_matrix!(M, M_id, 200)
 # The function looks at the maximum and minimum values of the matrix and then finds a partition 
