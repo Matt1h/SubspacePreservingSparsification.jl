@@ -11,7 +11,7 @@ binned_minimization(M_id, zeros(5, 5), Matrix{Float64}(I, 5, 5), M)
 
 sparsify(M, 0.6, 2, 200)
 
-sparsify(M, 0.6, 2, 200, true)
+sparsify(M, 0.6, 2, 200, impose_null_spaces=true)
 
 # This file was generated using Literate.jl, https://github.com/fredrikekre/Literate.jl
 

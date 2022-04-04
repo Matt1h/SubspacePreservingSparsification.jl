@@ -68,7 +68,7 @@ sparsify(M, 0.6, 2, 200)
 
 # where $M^+$ is the pseudo inverse of $M$.
 # We can also set `impose_null_spaces` true:
-sparsify(M, 0.6, 2, 200, true)
+sparsify(M, 0.6, 2, 200, impose_null_spaces=true)
 # Then after the described optimization problem was solved the function also solves an additional optimization problem that
 # ensures that the left and right null-spaces are preserved exactly. Because our matrix has full rank this makes no difference in our case.
 # 

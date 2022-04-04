@@ -92,7 +92,7 @@ where $M^+$ is the pseudo inverse of $M$.
 We can also set `impose_null_spaces` true:
 
 ````@example example
-sparsify(M, 0.6, 2, 200, true)
+sparsify(M, 0.6, 2, 200, impose_null_spaces=true)
 ````
 
 Then after the described optimization problem was solved the function also solves an additional optimization problem that
