@@ -3,7 +3,7 @@ using SubspacePreservingSparsification
 using Literate
 
 EXAMPLE_DIR = joinpath(@__DIR__, "literate")
-OUT_DIR = joinpath(@__DIR__, "src\\generated")
+OUT_DIR = joinpath(@__DIR__, "src/generated")
 
 # Use Literate.jl to generate docs and notebooks of examples
 for example in readdir(EXAMPLE_DIR)
@@ -21,7 +21,7 @@ makedocs(;
     format=Documenter.HTML(; prettyurls=get(ENV, "CI", "false") == "true", assets=String[]),
     pages=[
         "Home" => "index.md",
-        "example" => "generated/example.md",
+        "Example" => "generated/example.md",
     ],
 )
 

@@ -15,6 +15,11 @@ determines whats the maximum number of bins is (200-1000 is a reasonable choice)
 means no binning is performed and can lead to significant slowdown.
 Then an optimization problem, with constraints given by the binning pattern, is solved to find a
 sparse approximation `X` for `M`.
+It is possible to choose between two different optimization problems with 
+`optimization_prob ="penalize_near_NS"` or `optimization_prob ="penalize_distant_NS"`. Both comparing
+the action of A and X on singular vectors. The first one penalizes actions on singular vectors with
+smaller corresponding singular values with higher weights, the second one actions on singular vectors with
+bigger corresponding singular values with higher weights.
 If `impose_null_spaces=true`, another optimization problem is solved that ensures that `X` and
 `M` have the same null space.
 
@@ -28,9 +33,8 @@ julia> sparsify([16.99 65; 0.1 17.01], 0.6, 2, 200)
    ⋅      16.8041
 ```
 """
-function sparsify(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer, 
-    impose_null_spaces=false::Bool) where{T}
-    
+function sparsify(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integer; 
+    optimization_prob="penalize_near_NS", impose_null_spaces=false::Bool) where{T}
     pinv_M, rnull, lnull = pinv_qr(M)
 
     # sparsity pattern
@@ -44,10 +48,18 @@ function sparsify(M::AbstractArray{T}, ratio::Real, p::Real, max_num_bins::Integ
     bin_sparse_matrix!(M, M_id, max_num_bins)
 
     # minimization
-    pinv_MTM = pinv_M * pinv_M'
-    pinv_MMT = pinv_M' * pinv_M
-    D = M * pinv_MTM + pinv_MMT * M
-    X = binned_minimization(M_id, pinv_MTM, pinv_MMT, D)
+    if optimization_prob == "penalize_near_NS"
+        B = pinv_M * pinv_M'
+        C = pinv_M' * pinv_M
+        D = M * B + C * M
+    elseif optimization_prob == "penalize_distant_NS"
+        B = M'*M
+        C = M*M'
+        D = 2*M*M'*M
+    else
+        throw(ArgumentError("$optimization_prob is not an option for an optimization problem"))
+    end
+    X = binned_minimization(M_id, B, C, D)
     impose_null_spaces && sps_impose_action!(X, M, rnull, lnull)
     return X
 end

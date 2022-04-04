@@ -1,8 +1,8 @@
 ```@meta
-EditURL = "<unknown>/literate/example.jl"
+EditURL = "<unknown>/docs/literate/example.jl"
 ```
 
-# example
+# Example
 Lets try to find a sparse representation for a matrix, so that the Frobeniusnorm of the difference
 is as small as possible.
 Lets consider a symmetric matrix $M$:
@@ -73,17 +73,21 @@ sparsify(M, 0.6, 2, 200)
 ````
 
 This function calculates the sparsity and binning pattern like we did and uses as optimization problem
+
 ```math
-min\, \frac{1}{2} \sum\limits_{i=1}^r \frac{1}{\sigma_i^2} ||\left( X - M\right) v_i||_2^2
+\min\limits_{X} \frac{1}{2} \sum\limits_{i=1}^r \frac{1}{\sigma_i^2} ||\left( X - M\right) v_i||_2^2
 + \frac{1}{2} \sum\limits_{i=1}^r \frac{1}{\sigma_i^2} ||\left( X^* - M^*\right) u_i||_2^2,
 ```
-where r is the rank, $\sigma_i$ are the r biggest singular values, $v_i$ the corresponding right singular vectors and $u_i$
-the corresponding left singular vectors of M. $M^*$ denotes the conjugate transpose of $M$. The function compares the action of
-the unknown matrix $X$ with the action of M on the singular vectors of $M$ and penalizes the differences in near null-space with
+
+where $r$ is the rank, $\sigma_i$ are the $r$ biggest singular values, $v_i$ the corresponding right singular vectors and $u_i$
+the corresponding left singular vectors of $M$. $M^*$ denotes the conjugate transpose of $M$. The function compares the action of
+the unknown matrix $X$ with the action of $M$ on the singular vectors of $M$ and penalizes the differences in near null-space with
 larger weights. It can be formulatet in the form
+
 ```math
 X M^+(M^+)^* + (M^+)^*M^+X = MM^+(M^+)^* (M^+)^*M^+M,
 ```
+
 where $M^+$ is the pseudo inverse of $M$.
 We can also set `impose_null_spaces` true:
 
