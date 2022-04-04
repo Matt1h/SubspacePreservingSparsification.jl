@@ -7,15 +7,15 @@ especially in the lower end of the singular value spectrum.
 
 Wrapper function over all functionality.
 
--Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computed with a
+Compute a sparse approximation for a matrix `M`. First the sparsity pattern is computed with a
 `ratio` in ``[0,1]`` that determines the sparsity (`0` means more sparse, `1` means less)
 and with `p` in ``(0, \\infty ]`` that determines which norm is used to find the sparsity pattern.
 
--Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
+Next the sparsity pattern is used to find a binning pattern, the non-negative integer `max_num_bins`
 determines whats the maximum number of bins is (200-1000 is a reasonable choice). `max_num_bins=0`
 means no binning is performed and can lead to significant slowdown.
 
--Then an optimization problem, with constraints given by the binning pattern, is solved to find a
+Then an optimization problem, with constraints given by the binning pattern, is solved to find a
 sparse approximation `X` for `M`.
 It is possible to choose between two different optimization problems with 
 `optimization_prob ="penalize_near_NS"` or `optimization_prob ="penalize_distant_NS"`. Both comparing
@@ -23,7 +23,7 @@ the action of A and X on singular vectors. The first one penalizes actions on si
 smaller corresponding singular values with higher weights, the second one actions on singular vectors with
 bigger corresponding singular values with higher weights.
 
--If `impose_null_spaces=true`, another optimization problem is solved that ensures that `X` and
+If `impose_null_spaces=true`, another optimization problem is solved that ensures that `X` and
 `M` have the same null space.
 
 See also: [`sparsity_pattern`](@ref), [`bin_sparse_matrix!`](@ref).
