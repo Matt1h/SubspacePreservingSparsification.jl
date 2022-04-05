@@ -21,7 +21,7 @@ makedocs(;
     format=Documenter.HTML(; prettyurls=get(ENV, "CI", "false") == "true", assets=String[]),
     pages=[
         "Home" => "index.md",
-        "example" => "generated/example.md",
+        "Example" => "generated/example.md",
     ],
 )
 
